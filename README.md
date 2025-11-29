@@ -1,44 +1,43 @@
-# Little Book on Deep Learning – Chapter Splits
+# Learning Context: Little Book on Deep Learning
 
-This repo splits `little_book_on_deep_learning.pdf` into per-chapter folders, each with:
-- `chapter.pdf` – the page subset for that chapter
-- `chapter.txt` – extracted text (plain, with page separators)
+This repository serves as a structured workspace for learning from François Fleuret's [Little Book on Deep Learning](https://fleuret.org/public/lbdl.pdf). 
 
-## Structure
-- `split_chapters.py` – splitting/extraction script
-- `chapters/NN_slug/` – output folders (already generated)
-- `.venv/` – local virtual environment with required deps
+The content has been processed and organized to facilitate focused study and to provide granular context for AI assistants (like Gemini) to help explain concepts, summarize chapters, or answer specific questions.
 
-## Chapter ranges (1-based, inclusive)
-1. Foreword: 8–9  
-2. Machine Learning: 11–19  
-3. Efficient Computation: 20–24  
-4. Training: 25–57  
-5. Model Components: 58–97  
-6. Architectures: 98–116  
-7. Prediction: 117–137  
-8. Synthesis: 138–145  
-9. The Compute Schism: 146–157  
-10. The missing bits: 158–163  
-11. Bibliography: 164–175  
-12. Index: 176–185  
+## Repository Purpose
+
+The primary goal is to break down the dense material of the book into manageable, machine-readable chunks. This allows for:
+1.  **Context-Aware AI Assistance:** Giving the AI specific chapter text to ensure accurate answers based strictly on the book's content.
+2.  **Structured Learning:** Tracking progress chapter by chapter.
+3.  **Quick Reference:** Easily locating specific topics using the generated folder structure.
+
+## Key Files & Structure
+
+*   **`gemini_book_overview.md`**: A comprehensive global overview and roadmap of the book. It contains summaries, key concepts, and dependency maps for every chapter. Use this to orient yourself or prime the AI before diving into a specific section.
+*   **`chapters/`**: The core content. The book has been split into individual folders (e.g., `01_machine_learning/`, `05_architectures/`). Each contains:
+    *   `chapter.pdf`: The specific pages for that chapter.
+    *   `chapter.txt`: The plain text extracted from those pages (optimized for LLM context).
+*   **`little_book_on_deep_learning.pdf`**: The original full source PDF.
+*   **`split_chapters.py`**: The Python utility used to generate the `chapters/` directory.
 
 ## Usage
-Assumes macOS with Python 3 available.
+
+### 1. Getting an Overview
+Start by reading `gemini_book_overview.md` or feeding it to your AI assistant to establish a shared understanding of the book's scope and notation conventions.
+
+### 2. Deep Diving a Topic
+When studying a specific concept (e.g., "How does a Transformer work?"):
+1.  Navigate to the relevant folder (e.g., `chapters/05_architectures/`).
+2.  Open the `chapter.pdf` for reading.
+3.  If you have questions, provide the content of `chapter.txt` to your AI assistant as context.
+
+### 3. Regenerating Content (Optional)
+If you need to re-run the extraction process (e.g., to adjust page ranges):
 
 ```bash
-# activate venv (already created and populated)
+# Activate the environment
 source .venv/bin/activate
 
-# regenerate everything (outputs to ./chapters)
+# Run the split script
 python split_chapters.py
-
-# generate specific chapters by slug
-python split_chapters.py --only machine_learning training
 ```
-
-Outputs go under `chapters/NN_slug/` with `chapter.pdf` and `chapter.txt`.
-
-## Notes
-- Text extraction uses pdfplumber with character deduping to reduce repeated letters.
-- If you need markdown instead of plain text, or adjusted ranges/naming, update `CHAPTERS` in `split_chapters.py`.
