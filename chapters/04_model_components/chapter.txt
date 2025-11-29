@@ -1,0 +1,1135 @@
+--- Page 58 ---
+4
+Chapter
+Model Components
+A deep model is nothing more than a complex
+tensorial computation that can ultimately be
+decomposed into standard mathematical oper-
+ations from linear algebra and analysis. Over
+the years, the field has developed a large collec-
+tion of high-level modules with a clear semantic,
+and complex models combining these modules,
+which have proven to be effective in specific ap-
+plication domains.
+Empirical evidence and theoretical results show
+thatgreaterperformanceisachievedwithdeeper
+architectures, that is, long compositions of map-
+pings. As we saw in section § 3.4, training such
+a model is challenging due to the vanishing gra-
+dient, and multiple important technical contri-
+butions have mitigated this issue.
+58
+
+--- Page 59 ---
+4.1 The notion of layer
+We call layers standard complex compounded
+tensor operations that have been designed and
+empirically identified as being generic and effi-
+cient. They often incorporate trainable param-
+eters and correspond to a convenient level of
+granularity for designing and describing large
+deep models. The term is inherited from sim-
+ple multi-layer neural networks, even though
+modern models may take the form of a complex
+graph of such modules, incorporating multiple
+parallel pathways.
+Y
+4×4
+g
+n=4
+f
+×K
+32×32
+X
+In the following pages, I try to stick to the con-
+vention for model depiction illustrated above:
+• operators / layers are depicted as boxes,
+• darker coloring indicates that they embed
+trainable parameters,
+• non-default valued hyper-parameters are
+59
+
+--- Page 60 ---
+added in blue on their right,
+• a dashed outer frame with a multiplicative
+factor indicates that a group of layers is repli-
+cated in series, each with its own set of trainable
+parameters, if any, and
+• in some cases, the dimension of their output is
+specified on the right when it differs from their
+input.
+Additionally, layers that have a complex internal
+structure are depicted with a greater height.
+60
+
+--- Page 61 ---
+4.2 Linear layers
+The most important modules in terms of compu-
+tation and number of parameters are the Linear
+layers. They benefit from decades of research
+and engineering in algorithmic and chip design
+for matrix operations.
+Note that the term “linear” in deep learning gen-
+erally refers improperly to an affine operation,
+which is the sum of a linear expression and a
+constant bias.
+Fully connected layers
+The most basic linear layer is thefully connected
+layer, parameterized by a trainable weight ma-
+trix W of size D′×D andbias vector b of dimen-
+sion D′. It implements an affine transformation
+generalized to arbitrary tensor shapes, where
+the supplementary dimensions are interpreted
+as vector indexes. Formally, given an input
+X
+of dimension , it computes an
+D ×···×D ×D
+1 K
+output Y of dimension D ×···×D ×D′ with
+1 K
+∀d ,...,d ,
+1 K
+Y [d ,...,d ] = WX[d ,...,d ]+b.
+1 K 1 K
+While at first sight such an affine operation
+61
+
+--- Page 62 ---
+seems limited to geometric transformations such
+as rotations, symmetries, and translations, it can
+in fact do more than that. In particular, projec-
+tions for dimension reduction or signal filtering,
+but also, from the perspective of the dot product
+being a measure of similarity, a matrix-vector
+product can be interpreted as computing match-
+ing scores between the queries, as encoded by
+the input vectors, and keys, as encoded by the
+matrix rows.
+As we saw in § 3.3, the gradient descent starts
+with the parameters’ random initialization. If
+this is done too naively, as seen in § 3.4, the net-
+work may suffer from exploding or vanishing
+activations and gradients [Glorot and Bengio,
+2010]. Deep learning frameworks implement ini-
+tialization methods that in particular scale the
+random parameters according to the dimension
+of the input to keep the variance of the activa-
+tions constant and prevent pathological behav-
+iors.
+Convolutional layers
+A linear layer can take as input an arbitrarily-
+shaped tensor by reshaping it into a vector, as
+long as it has the correct number of coefficients.
+However, such a layer is poorly adapted to deal-
+62
+
+--- Page 63 ---
+Y Y
+ϕ ψ
+X X
+Y Y
+ϕ ψ
+X X
+... ...
+Y Y
+ϕ ψ
+X X
+1D transposed
+1D convolution
+convolution
+Figure 4.1:
+A 1D convolution (left) takes as input
+a D×T tensor X, applies the same affine mapping
+ϕ(·;w) to every sub-tensor of shape D×K, and stores
+the resulting D′×1 tensors into Y . A 1D transposed
+convolution (right) takes as input a D×T tensor, ap-
+plies the same affine mapping ψ(·;w) to every sub-
+tensor of shape D×1, and sums the shifted resulting
+D′×K tensors. Both can process inputs of different
+sizes.
+63
+
+--- Page 64 ---
+D
+W
+H
+ϕ ψ
+Y X
+X Y
+2D transposed
+2D convolution
+convolution
+Figure 4.2:
+A 2D convolution (left) takes as input a
+D×H×W tensorX,appliesthesameaffinemapping
+ϕ(·;w) to every sub-tensor of shape D×K×L, and
+stores the resulting D′×1×1 tensors into Y . A 2D
+transposed convolution (right) takes as input a D×
+H×W tensor,appliesthesameaffinemappingψ(·;w)
+to every D×1×1 sub-tensor, and sums the shifted
+resulting D′×K×L tensors into Y .
+ing with large tensors, since the number of pa-
+rameters and number of operations are propor-
+tional to the product of the input and output
+dimensions. For instance, to process an RGB
+image of size as input and compute a
+256×256
+result of the same size, it would require approxi-
+mately 4×1010 parameters and multiplications.
+Besides these practical issues, most of the high-
+dimension signals are strongly structured. For
+64
+
+--- Page 65 ---
+Y
+ϕ
+Y
+X
+ϕ
+p=2
+X
+Padding
+Y
+Y
+ϕ
+ϕ
+X
+X
+s=2
+...
+d=2
+Stride
+Dilation
+Figure 4.3:
+Beside its kernel size and number of input
+/ output channels, a convolution admits three hyper-
+parameters: the stride s (left) modulates the step size
+when going through the input tensor, the padding p
+(top right) specifies how many zero entries are added
+around the input tensor before processing it, and the
+dilation d (bottom right) parameterizes the index count
+between coefficients of the filter.
+65
+
+--- Page 66 ---
+instance, images exhibit short-term correlations
+and statistical stationarity with respect to trans-
+lation, scaling, and certain symmetries. This
+is not reflected in the inductive bias of a fully
+connected layer, which completely ignores the
+signal structure.
+To leverage these regularities, the tool of choice
+isconvolutionallayers, whicharealsoaffine, but
+process time-series or 2D signals locally, with
+the same operator everywhere.
+A 1D convolution is mainly defined by three hy-
+per-parameters: its kernel size , its number of
+K
+input channels , its number of output chan-
+D
+nels D′, and by the trainable parameters
+w
+of an
+affine mapping
+ϕ(·;w) :
+RD×K
+→
+RD′×1.
+It can process any tensor of size with
+X D×T
+, and applies to every sub-tensor
+T ≥ K ϕ(·;w)
+ofsize of , storingtheresultsinatensor
+D×K X
+Y of size D′×(T −K+1) , as pictured in Figure
+4.1 (left).
+A2D convolution is similar but has a ker-
+K×L
+nel and takes as input a tensor (see
+D×H ×W
+Figure 4.2, left).
+Both operators have for trainable parameters
+those of ϕ that can be envisioned as D′ filters
+66
+
+--- Page 67 ---
+of size or respectively, and a
+D×K D×K×L
+bias vector of dimension D′.
+Such a layer is equivariant to translation, mean-
+ing that if the input signal is translated, the out-
+put is similarly transformed. This property re-
+sults in a desirable inductive bias when dealing
+with a signal whose distribution is invariant to
+translation.
+They also admit three additional hyper-parame-
+ters, illustrated on Figure 4.3:
+• The padding specifies how many zero coeffi-
+cients should be added around the input tensor
+before processing it, particularly to maintain the
+tensor size when the kernel size is greater than
+one. Its default value is .
+0
+• Thestride specifiesthestepsizeusedwhengo-
+ingthroughtheinput, allowingonetoreducethe
+output size geometrically by using large steps.
+Its default value is .
+1
+• Thedilation specifiestheindexcountbetween
+the filter coefficients of the local affine opera-
+tor. Its default value is , and greater values
+1
+correspond to inserting zeros between the coef-
+ficients, which increases the filter / kernel size
+while keeping the number of trainable parame-
+67
+
+--- Page 68 ---
+W
+H
+Model depth
+Figure 4.4:
+Given an activation in a series of convolu-
+tion layers, here in red, itsreceptive field is the area in
+the input signal, in blue, that modulates its value. Each
+intermediate convolutional layer increases the width
+and height of that area by roughly those of the kernel.
+ters unchanged.
+Except for the number of channels, a convo-
+lution’s output is usually smaller than its in-
+put. In the 1D case without padding nor di-
+lation, if the input is of size , the kernel of
+T
+size , and the stride is , the output is of size
+K S
+T′ = (T −K)/S+1 .
+Givenanactivationcomputedbyaconvolutional
+layer, or the vector of values for all the channels
+at a certain location, the portion of the input
+68
+
+--- Page 69 ---
+signal that it depends on is called its receptive
+field (see Figure 4.4). One of the sub-
+H ×W
+tensors corresponding to a single channel of a
+activation tensor is called anactiva-
+D×H ×W
+tion map.
+Convolutionsareusedtorecombineinformation,
+generally to reduce the spatial size of the rep-
+resentation, in exchange for a greater number
+of channels, which translates into a richer local
+representation. They can implement differential
+operators such as edge-detectors, or template
+matching mechanisms. A succession of such lay-
+erscanalsobeenvisionedasacompositionaland
+hierarchical representation [Zeiler and Fergus,
+2014], or as a diffusion process in which infor-
+mation can be transported by half the kernel size
+when passing through a layer.
+A converse operation is the transposed convo-
+lution that also consists of a localized affine op-
+erator, defined by similar hyper and trainable
+parameters as the convolution, but which, for
+instance, in the 1D case, applies an affine map-
+ping
+ψ(·;w) :
+RD×1
+→
+RD′×K, to every
+D×1
+sub-tensor of the input, and sums the shifted
+D′×K resulting tensors to compute its output.
+Such an operator increases the size of the signal
+and can be understood intuitively as a synthe-
+69
+
+--- Page 70 ---
+sis process (see Figure 4.1, right, and Figure 4.2,
+right).
+A series of convolutional layers is the usual ar-
+chitecture for mapping a large-dimension signal,
+such as an image or a sound sample, to a low-
+dimension tensor. This can be used, for instance,
+to get class scores for classification or a com-
+pressed representation. Transposed convolution
+layers are used the opposite way to build a large-
+dimension signal from a compressed representa-
+tion, either to assess that the compressed repre-
+sentation contains enough information to recon-
+struct the signal or for synthesis, as it is easier
+to learn a density model over a low-dimension
+representation. We will revisit this in § 5.2.
+70
+
+--- Page 71 ---
+4.3 Activation functions
+If a network were combining only linear com-
+ponents, it would itself be a linear operator,
+so it is essential to have non-linear operations.
+These are implemented in particular withactiva-
+tion functions, which are layers that transform
+each component of the input tensor individually
+through a mapping, resulting in a tensor of the
+same shape.
+There are many different activation functions,
+but the most used is the Rectified Linear Unit
+(ReLU) [Glorot et al., 2011], which sets nega-
+tive values to zero and keeps positive values
+unchanged (see Figure 4.5, top right):
+(cid:40)
+if
+0 x < 0,
+relu(x) =
+otherwise
+x .
+Given that the core training strategy of deep-
+learning relies on the gradient, it may seem prob-
+lematic to have a mapping that is not differen-
+tiable at zero and constant on half the real line.
+However, the main property gradient descent
+requires is that the gradient is informative on
+average. Parameter initialization and data nor-
+malization make half of the activations positive
+71
+
+--- Page 72 ---
+Tanh ReLU
+Leaky ReLU GELU
+Figure 4.5:
+Activation functions.
+when the training starts, ensuring that this is the
+case.
+Before the generalization of ReLU, the standard
+activation function was the hyperbolic tangent
+(Tanh, see Figure 4.5, top left) which saturates
+exponentially fast on both the negative and pos-
+itive sides, aggravating the vanishing gradient.
+Other popular activation functions follow the
+same idea of keeping positive values unchanged
+and squashing the negative values. Leaky ReLU
+[Maas et al., 2013] applies a small positive multi-
+72
+
+--- Page 73 ---
+plying factor to the negative values (see Figure
+4.5, bottom left):
+(cid:40)
+if
+ax x < 0,
+leakyrelu(x) =
+otherwise
+x .
+And GELU [Hendrycks and Gimpel, 2016] is de-
+fined using the cumulative distribution function
+of the Gaussian distribution, that is:
+gelu(x) = xP(Z ≤ x),
+where . It roughly behaves like a
+Z ∼ 𝒩 (0,1)
+smooth ReLU (see Figure 4.5, bottom right).
+The choice of an activation function, in partic-
+ular among the variants of ReLU, is generally
+driven by empirical performance.
+73
+
+--- Page 74 ---
+47
+ti gnikam ,noitacol esicerp sesol tI .tneserp si
+trap a fo ecnatsni eno tsael ta taht gnidocne fo
+yaw a sa ,strap fo ecneserp eht rof serocs lac
+-ol etupmoc taht sreyal lanoitulovnoc fo seires
+a swollof ti nehw ,ro ,noitcnujsid lacigol a sa
+deterpretni ylevitiutni eb nac noitarepo xam ehT
+.)2.4 § ees( snoitulovnoc rof sa alumrof emas
+eht gniwollof ,rosnet gnitluser regral a ni stluser
+edirts rellams A .tluafed yb ezis lenrek eht ot
+lauqe gnieb edirts eht htiw ,noitalid dna ,edirts
+,gniddap :sretemarap-repyh eerht sah rotarepo
+siht ,noitulovnoc eht htiw sA .ezis lenrek eht yb
+dedivid si ezis laitaps esohw dna ,tupni eht sa
+slennahc fo rebmun emas eht htiw rosnet tlus
+-er a ni derots era seulav esehT .ezis lenrek eht
+ot lauqe ezis laitaps fo srosnet-bus gnippalrevo
+-non revo ,lennahc rep noitavitca mumixam
+eht setupmoc reyal siht ,mrof dradnats sti nI
+.ezis lenrek a yb denfied
+si dna D2 dna D1 ni etarepo nac ,noitulovnoc ot
+ylralimis ,hcihw ,reyal gniloop xam eht si ssalc
+sihtfonoitarepodradnatstsomehT .noitamrofni
+eht sezirammus yllaedi taht eno otni snoitavitca
+elpitlum senibmoc taht noitarepo gniloop a esu
+ot si ezis langis eht ecuder ot ygetarts lacissalc A
+gnilooP 4.4
+
+--- Page 75 ---
+Y
+max
+X
+Y
+max
+X
+...
+Y
+max
+X
+1D max pooling
+Figure 4.6: A 1D max pooling takes as input a D×T
+tensor X, computes the max over non-overlapping 1×
+L sub-tensors (in blue) and stores the resulting values
+(in red) in a D×(T/L) tensor Y .
+75
+
+--- Page 76 ---
+invariant to local deformations.
+A standard alternative is the average pooling
+layer that computes the average instead of the
+maximum over the sub-tensors. This is a linear
+operation, whereas max pooling is not.
+76
+
+--- Page 77 ---
+4.5 Dropout
+Some layers have been designed to explicitly
+facilitate training or improve the learned repre-
+sentations.
+One of the main contributions of that sort was
+dropout [Srivastava et al., 2014]. Such a layer
+has no trainable parameters, but one hyper-
+parameter, , and takes as input a tensor of arbi-
+p
+trary shape.
+It is usually switched off during testing, in which
+case its output is equal to its input. When it is ac-
+tive, it has a probability of setting to zero each
+p
+activation of the input tensor independently, and
+it re-scales all the activations by a factor of 1
+1−p
+to maintain the expected value unchanged (see
+Figure 4.7).
+The motivation behind dropout is to favor
+meaningful individual activation and discourage
+group representation. Since the probability that
+a group of activations remains intact through
+k
+a dropout layer is (1−p)k, joint representations
+become unreliable, making the training proce-
+dure avoid them. It can also be seen as a noise
+injection that makes the training more robust.
+When dealing with images and 2D tensors, the
+77
+
+--- Page 78 ---
+Y Y
+10 1 1 1 1 10 1 1 1 10
+× 1 10 1 10 1 1 1 1 1 1 × 1
+1 1 10 1 1 1 1 10 1 1
+1−p
+1 1 1 1 1 10 1 1 10 1
+10 1 1 10 1 1 1 1 1 1
+X X
+Train Test
+Figure 4.7:
+Dropout can process a tensor of arbitrary
+shape. During training (left), it sets activations at ran-
+dom to zero with probability p and applies a multiply-
+ing factor to keep the expected values unchanged. Dur-
+ing test (right), it keeps all the activations unchanged.
+short-term correlation of the signals and the re-
+sulting redundancy negate the effect of dropout,
+since activations set to zero can be inferred from
+their neighbors. Hence, dropout for 2D tensors
+sets entire channels to zero instead of individual
+activations (see Figure 4.8).
+Although dropout is generally used to improve
+training and is inactive during inference, it can
+be used in certain setups as a randomization
+strategy, for instance, to estimate empirically
+confidence scores [Gal and Ghahramani, 2015].
+78
+
+--- Page 79 ---
+D
+H,W
+B
+× × 1
+1 1 0 1 0 0 1
+1−p
+Train Test
+Figure 4.8:
+2D signals such as images generally exhibit
+strong short-term correlation and individual activa-
+tions can be inferred from their neighbors. This redun-
+dancy nullifies the effect of the standard unstructured
+dropout, so the usual dropout layer for 2D tensors drops
+entire channels instead of individual values.
+79
+
+--- Page 80 ---
+4.6 Normalizing layers
+An important class of operators to facilitate the
+training of deep architectures are the normaliz-
+ing layers, which force the empirical mean and
+variance of groups of activations.
+The main layer in that family is batch normal-
+ization [Ioffe and Szegedy, 2015], which is the
+only standard layer to process batches instead
+of individual samples. It is parameterized by a
+hyper-parameter and two series of trainable
+D
+scalar parameters and .
+β ,...,β γ ,...,γ
+1 D 1 D
+Given a batch of samples of dimen-
+B x ,...,x
+1 B
+sion , it first computes for each of the com-
+D D
+ponents an empirical mean and variance
+mˆ vˆ
+d d
+across the batch:
+B
+1 (cid:88)
+mˆ = x
+d b,d
+B
+b=1
+B
+1 (cid:88)
+2
+vˆ = (x −mˆ ) ,
+d b,d d
+B
+b=1
+from which it computes for every component
+a normalized value , with empirical
+x z
+b,d b,d
+mean and variance , and from it the final
+0 1
+result value with mean and standard de-
+y β
+b,d d
+80
+
+--- Page 81 ---
+D
+H,W
+B
+γ ·+β γ ·+β
+d d d,h,w d,h,w
+√ √
+(·−mˆ )/ vˆ +ϵ (·−mˆ )/ vˆ +ϵ
+d d b b
+batchnorm layernorm
+Figure 4.9:
+Batch normalization (left) normalizes in
+mean and variance each group of activations for a
+given d, and scales/shifts that same group of activation
+with learned parameters for each d. Layer normaliza-
+tion (right) normalizes each group of activations for a
+certain b, and scales/shifts each group of activations
+for a given d,h,w with learned parameters indexed by
+the same.
+81
+
+--- Page 82 ---
+viation :
+γ
+d
+x −mˆ
+b,d d
+∀b, z = √
+b,d
+vˆ +ϵ
+d
+y = γ z +β .
+b,d d b,d d
+Because this normalization is defined across a
+batch, it is done only during training. During
+testing, the layer transforms individual samples
+according to the s and s estimated with a
+mˆ vˆ
+d d
+moving average over the full training set, which
+boils down to a fixed affine transformation per
+component.
+The motivation behind batch normalization was
+to avoid that a change in scaling in an early layer
+of the network during training impacts all the
+layers that follow, which then have to adapt their
+trainable parameters accordingly. Although the
+actual mode of action may be more complicated
+than this initial motivation, this layer consider-
+ably facilitates the training of deep models.
+In the case of 2D tensors, to follow the prin-
+ciple of convolutional layers of processing all
+locations similarly, the normalization is done
+per-channel across all 2D positions, and and
+β
+remain vectors of dimension so that the
+γ D
+scaling/shift does not depend on the 2D posi-
+tion. Hence, if the tensor to be processed is
+82
+
+--- Page 83 ---
+of shape , the layer computes
+B×D×H ×W
+, for from the correspond-
+(mˆ ,vˆ ) d = 1,...,D
+d d
+ing slice, normalizes it accordingly,
+B×H ×W
+and finally scales and shifts its components with
+the trainable parameters and .
+β γ
+d d
+So, given a tensor, batch normalization
+B×D
+normalizes it across and scales/shifts it ac-
+b
+cording to , which can be implemented as a
+d
+component-wise product by and a sum with
+γ
+. Given a tensor, it normal-
+β B×D×H ×W
+izes across and scales/shifts according to
+b,h,w
+(see Figure 4.9, left).
+d
+This can be generalized depending on these di-
+mensions. For instance, layer normalization [Ba
+et al., 2016] computes moments and normalizes
+across all components of individual samples, and
+scales and shifts components individually (see
+Figure 4.9, right). So, given a tensor, it
+B×D
+normalizes across and scales/shifts also accord-
+d
+ing to the same. Given a tensor,
+B×D×H ×W
+it normalizes it across and scales/shifts
+d,h,w
+according to the same.
+Contrary to batch normalization, since it pro-
+cesses samples individually, layer normalization
+behaves the same during training and testing.
+83
+
+--- Page 84 ---
+4.7 Skip connections
+Another technique that mitigates the vanishing
+gradient and allows the training of deep archi-
+tectures are skip connections [Long et al., 2014;
+Ronneberger et al., 2015]. They are not layers
+per se, but an architectural design in which out-
+puts of some layers are transported as-is to other
+layers further in the model, bypassing process-
+ing in between. This unmodified signal can be
+concatenated or added to the input of the layer
+the connection branches into (see Figure 4.10). A
+particular type of skip connections are the resid-
+ual connections which combine the signal with
+a sum, and usually skip only a few layers (see
+Figure 4.10, right).
+The most desirable property of this design is to
+ensure that, even in the case of gradient-killing
+processing at a certain stage, the gradient will
+still propagate through the skip connections.
+Residual connections, in particular, allow for the
+building of deep models with up to several hun-
+dred layers, and key models, such as theresidual
+networks [He et al., 2015] in computer vision
+(see § 5.2), and the Transformers [Vaswani et al.,
+2017] in natural language processing (see § 5.3),
+are entirely composed of blocks of layers with
+residual connections.
+84
+
+--- Page 85 ---
+···
+f(8)
+···
+···
+f(7)
+f(6)
++
+f(6)
+f(5)
+f(4)
+f(5)
+f(4)
+f(3)
+f(4)
+f(3)
++
+f(3)
+f(2) f(2)
+f(2)
+f(1) f(1)
+f(1)
+··· ···
+···
+Figure4.10:
+Skipconnections,highlightedinredonthis
+figure, transport the signal unchanged across multiple
+layers. Some architectures (center) that downscale and
+re-upscale the representation size to operate at multiple
+scales, have skip connections to feed outputs from the
+early parts of the network to later layers operating at
+the same scales [Long et al., 2014; Ronneberger et al.,
+2015]. The residual connections (right) are a special
+type of skip connections that sum the original signal
+to the transformed one, and usually bypass at most a
+handful of layers [He et al., 2015].
+85
+
+--- Page 86 ---
+Their role can also be to facilitate multi-scale rea-
+soning in models that reduce the signal size be-
+fore re-expanding it, by connecting layers with
+compatible sizes, for instance for semantic seg-
+mentation (see § 6.4). In the case of residual
+connections, they may also facilitate learning
+by simplifying the task to finding a differential
+improvement instead of a full update.
+86
+
+--- Page 87 ---
+4.8 Attention layers
+In many applications, there is a need for an op-
+eration able to combine local information at lo-
+cations far apart in a tensor. For instance, this
+could be distant details for coherent and realistic
+image synthesis, or words at different positions
+in a paragraph to make a grammatical or seman-
+tic decision in Natural Language Processing.
+Fully connected layers cannot process large-
+dimension signals, nor signals of variable size,
+and convolutional layers are not able to prop-
+agate information quickly. Strategies that ag-
+gregate the results of convolutions, for instance,
+by averaging them over large spatial areas, suf-
+fer from mixing multiple signals into a limited
+number of dimensions.
+Attention layers specifically address this prob-
+lem by computing an attention score for each
+component of the resulting tensor to each com-
+ponent of the input tensor, without locality con-
+straints, and averaging the features across the
+full tensor accordingly [Vaswani et al., 2017].
+Even though they are substantially more com-
+plicated than other layers, they have become a
+standard element in many recent models. They
+are, inparticular, thekeybuildingblockofTrans-
+87
+
+--- Page 88 ---
+Q Y
+K A V A
+Computes A ,...,A Computes Y
+q,1 q,NKV q
+Figure 4.11:
+The attention operator can be inter-
+preted as matching every query Q with all the
+q
+keys K ,...,K to get normalized attention scores
+1 NKV
+A ,...,A (left, and Equation 4.1), and then av-
+q,1 q,NKV
+eraging the values V ,...,V with these scores to
+1 NKV
+compute the resulting Y (right, and Equation 4.2).
+q
+formers, the dominant architecture for Large
+Language Models. See § 5.3 and § 7.1.
+Attention operator
+Given
+• a tensor of queries of size ,
+Q NQ×DQK
+• a tensor of keys of size , and
+K NKV×DQK
+• a tensor of values of size ,
+V NKV×DV
+the attention operator computes a tensor
+Y = att(Q,K,V )
+of dimension . To do so, it first com-
+NQ×DV
+putes for every query index and every key in-
+q
+88
+
+--- Page 89 ---
+dex an attention score as the softargmax
+k A
+q,k
+of the dot products between the query and
+Q
+q
+the keys:
+(cid:16) (cid:17)
+exp √ 1 Q ·K
+q k
+DQK (4.1)
+A = ,
+q,k (cid:16) (cid:17)
+(cid:80) exp √ 1 Q ·K
+l q l
+DQK
+where the scaling factor 1 keeps the range
+√
+DQK
+of values roughly unchanged even for large .
+DQK
+Then a retrieved value is computed for each
+query by averaging the values according to the
+attention scores (see Figure 4.11):
+(cid:88)
+(4.2)
+Y = A V .
+q q,k k
+k
+So if a query matches one key far more
+Q K
+n m
+than all the others, the corresponding attention
+score will be close to one, and the retrieved
+A
+n,m
+value will be the value associated to that
+Y V
+n m
+key. But, if it matches several keys equally, then
+will be the average of the associated values.
+Y
+n
+This can be implemented as
+(cid:18) (cid:19)
+QKT
+att(Q,K,V ) = softargmax √ V.
+DQK
+(cid:124) (cid:123)(cid:122) (cid:125)
+A
+89
+
+--- Page 90 ---
+Y
+×
+A
+dropout
+1/Σ
+k
+Masked
+M ⊙
+softargmax
+exp
+×
+T
+Q K V
+Figure 4.12: The attention operator Y =att(Q,K,V )
+computes first an attention matrix A as the per-query
+softargmax of QKT, which may be masked by a con-
+stant matrix M before the normalization. This atten-
+tion matrix goes through a dropout layer before being
+multiplied by V to get the resulting Y . This operator
+can be made causal by taking M full of 1s below the
+diagonal and zeros above.
+90
+
+--- Page 91 ---
+This operator is usually extended in two ways,
+as depicted in Figure 4.12. First, the attention
+matrix can be masked by multiplying it before
+the softargmax normalization by a Boolean ma-
+trix . This allows, for instance, to make the
+M
+operatorcausal by taking full of s below the
+M 1
+diagonal and zero above, preventing from de-
+Y
+q
+pending on keys and values of indices greater
+k
+than . Second, the attention matrix is processed
+q
+by adropout layer (see § 4.5) before being multi-
+plied by , providing the usual benefits during
+V
+training.
+Since a dot product is computed for every
+query/key pair, thecomputational cost of the at-
+tention operator is quadratic with the sequence
+length. This happens to be problematic, as some
+of the applications of these methods require to
+process sequences of tens of thousands, or more
+tokens. Multiple attempts have been made at
+reducing this cost, for instance by combining a
+dense attention to a local window with a long-
+range sparse attention [Beltagy et al., 2020], or
+linearizing the operator to benefit from the asso-
+ciativity of the matrix product and compute the
+key-value product before multiplying with the
+queries [Katharopoulos et al., 2020].
+91
+
+--- Page 92 ---
+Y
+×WO
+(Y |···|Y )
+1 H
+atattattattattt
+×W×W 1× Q W 2× Q ×W 3 Q × W 4 W Q × H Q W 1× K W 2× K W×3 K × W 4 W K × H K W 1× V W 2× V ×W 3 V W 4 V H V
+×H
+XQ XK XV
+Figure 4.13:
+The Multi-head Attention layer applies
+for each of its h=1,...,H heads a parametrized lin-
+ear transformation to individual elements of the input
+sequences XQ,XK,XV to get sequences Q,K,V that
+are processed by the attention operator to compute Y .
+h
+These H sequences are concatenated along features,
+and individual elements are passed through one last
+linear operator to get the final result sequence Y .
+92
+
+--- Page 93 ---
+Multi-head Attention Layer
+This parameterless attention operator is the key
+element in the Multi-Head Attention layer de-
+picted in Figure 4.13. The structure of this layer
+is defined by several hyper-parameters: a num-
+ber of heads, and the shapes of three series of
+H
+trainable weight matrices
+H
+• of size ,
+WQ H ×D×DQK
+• of size , and
+WK H ×D×DQK
+• of size ,
+WV H ×D×DV
+to compute respectively the queries, the keys,
+and the values from the input, and a final weight
+matrix of size to aggregate the
+WO HDV×D
+per-head results.
+It takes as input three sequences
+• of size ,
+XQ NQ×D
+• of size , and
+XK NKV×D
+• of size ,
+XV NKV×D
+from which it computes, for ,
+h = 1,...,H
+(cid:0) (cid:1)
+Y = att XQWQ,XKWK,XVWV .
+h h h h
+These sequences are concatenated
+Y ,...,Y
+1 H
+along the feature dimension and each individual
+element of the resulting sequence is multiplied
+93
+
+--- Page 94 ---
+by to get the final result:
+WO
+Y = (Y | ··· | Y )WO.
+1 H
+As we will see in § 5.3 and in Figure 5.6, this
+layer is used to build two model sub-structures:
+self-attention blocks, in which the three input
+sequences , , and are the same, and
+XQ XK XV
+cross-attention blocks, where and are
+XK XV
+the same.
+It is noteworthy that the attention operator,
+and consequently the multi-head attention layer
+when there is no masking, is invariant to a per-
+mutation of the keys and values, andequivariant
+to a permutation of the queries, as it would per-
+mute the resulting tensor similarly.
+94
+
+--- Page 95 ---
+4.9 Token embedding
+In many situations, we need to convert discrete
+tokensintovectors. Thiscanbedonewithanem-
+bedding layer, which consists of a lookup table
+that directly maps integers to vectors.
+Such a layer is defined by two hyper-parame-
+ters: the number of possible token values,
+N
+and the dimension of the output vectors, and
+D
+one trainable weight matrix .
+N ×D M
+Given as input an integer tensor of dimen-
+X
+sion and values in
+D ×···×D {0,...,N −1}
+1 K
+such a layer returns a real-valued tensor of
+Y
+dimension with
+D ×···×D ×D
+1 K
+∀d ,...,d ,
+1 K
+Y [d ,...,d ] = M[X[d ,...,d ]].
+1 K 1 K
+95
+
+--- Page 96 ---
+4.10 Positional encoding
+While the processing of a fully connected layer
+is specific to both the positions of the features
+in the input tensor and to the positions of the
+resulting activations in the output tensor, con-
+volutional layers and Multi-Head Attention lay-
+ers are oblivious to the absolute position in the
+tensor. This is key to their stronginvariance and
+inductive bias, which is beneficial for dealing
+with a stationary signal.
+However, this can be an issue in certain situ-
+ations where proper processing has to access
+the absolute positioning. This is the case, for
+instance, for image synthesis, where the statis-
+tics of a scene are not totally stationary, or in
+natural language processing, where the relative
+positions of words strongly modulate the mean-
+ing of a sentence.
+The standard way of coping with this problem
+is to add or concatenate to the feature represen-
+tation, at every position, a positional encoding,
+which is a feature vector that depends on the po-
+sition in the tensor. This positional encoding can
+be learned as other layer parameters, or defined
+analytically.
+For instance, in the original Transformer model,
+96
+
+--- Page 97 ---
+for a series of vectors of dimension , Vaswani
+D
+et al. [2017] add an encoding of the sequence
+index as a series of sines and cosines at various
+frequencies:
+pos-enc[t,d] =
+ (cid:16) (cid:17)
+ sin t if d ∈ 2 N
+Td/D
+(cid:16) (cid:17)
+ cos t otherwise,
+T(d−1)/D
+with
+T =
+104.
+97

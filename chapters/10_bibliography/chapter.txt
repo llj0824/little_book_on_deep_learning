@@ -1,0 +1,402 @@
+--- Page 164 ---
+Bibliography
+T. Akiba, M. Shing, Y. Tang, et al. Evolution-
+ary Optimization of Model Merging Recipes.
+, abs/2403.13187, 2024. [pdf]. 157
+CoRR
+J. L. Ba, J. R. Kiros, and G. E. Hinton. Layer
+Normalization. , abs/1607.06450, 2016.
+CoRR
+[pdf]. 83
+R. Balestriero, M. Ibrahim, V. Sobal, et al. A
+Cookbook of Self-Supervised Learning. ,
+CoRR
+abs/2304.12210, 2023. [pdf]. 162
+A. Baydin, B. Pearlmutter, A. Radul, and
+J. Siskind. Automatic differentiation in
+machine learning: a survey. ,
+CoRR
+abs/1502.05767, 2015. [pdf]. 42
+M. Belkin, D. Hsu, S. Ma, and S. Mandal. Rec-
+onciling modern machine learning and the
+bias-variance trade-off. , abs/1812.11118,
+CoRR
+2018. [pdf]. 50
+164
+
+--- Page 165 ---
+I. Beltagy, M. Peters, and A. Cohan. Long-
+former: The Long-Document Transformer.
+, abs/2004.05150, 2020. [pdf]. 91
+CoRR
+R. Bommasani, D. Hudson, E. Adeli, et al. On
+the Opportunities and Risks of Foundation
+Models. , abs/2108.07258, 2021. [pdf].
+CoRR
+140
+J. Bradbury, S. Merity, C. Xiong, and R. Socher.
+Quasi-Recurrent Neural Networks. ,
+CoRR
+abs/1611.01576, 2016. [pdf]. 159
+T. Brown, B. Mann, N. Ryder, et al. Lan-
+guage Models are Few-Shot Learners. ,
+CoRR
+abs/2005.14165, 2020. [pdf]. 54, 113, 139
+S. Bubeck, V. Chandrasekaran, R. Eldan, et al.
+Sparks of Artificial General Intelligence:
+Early experiments with GPT-4. ,
+CoRR
+abs/2303.12712, 2023. [pdf]. 140
+T. Chen, B. Xu, C. Zhang, and C. Guestrin. Train-
+ing Deep Nets with Sublinear Memory Cost.
+, abs/1604.06174, 2016. [pdf]. 43
+CoRR
+K. Cho, B. van Merrienboer, Ç. Gülçehre,
+et al. Learning Phrase Representations using
+RNN Encoder-Decoder for Statistical Machine
+Translation. , abs/1406.1078, 2014. [pdf].
+CoRR
+158
+165
+
+--- Page 166 ---
+A. Chowdhery, S. Narang, J. Devlin, et al. PaLM:
+Scaling Language Modeling with Pathways.
+, abs/2204.02311, 2022. [pdf]. 9, 54, 140
+CoRR
+G. Cybenko. Approximation by superpositions
+of a sigmoidal function.
+Mathematics of Con-
+, 2(4):303–314, De-
+trol, Signals, and Systems
+cember 1989. [pdf]. 99
+J. Deng, W. Dong, R. Socher, et al. ImageNet:
+A Large-Scale Hierarchical Image Database.
+In
+Conference on Computer Vision and Pattern
+, 2009. [pdf]. 51
+Recognition (CVPR)
+T. Dettmers, A. Pagnoni, A. Holtzman, and
+L. Zettlemoyer. QLoRA: Efficient Finetuning
+of Quantized LLMs. , abs/2305.14314,
+CoRR
+2023. [pdf]. 155
+J. Devlin, M. Chang, K. Lee, and K. Toutanova.
+BERT: Pre-training of Deep Bidirectional
+Transformers for Language Understanding.
+, abs/1810.04805, 2018. [pdf]. 54, 115,
+CoRR
+162
+A. Dosovitskiy, L. Beyer, A. Kolesnikov, et al.
+An Image is Worth 16x16 Words: Transform-
+ers for Image Recognition at Scale. ,
+CoRR
+abs/2010.11929, 2020. [pdf]. 113, 114
+166
+
+--- Page 167 ---
+K. Fukushima. Neocognitron: A self-organizing
+neural network model for a mechanism of
+pattern recognition unaffected by shift in po-
+sition. , 36(4):193–202,
+Biological Cybernetics
+April 1980. [pdf]. 2
+Y. Gal and Z. Ghahramani. Dropout as
+a Bayesian Approximation: Representing
+Model Uncertainty in Deep Learning. ,
+CoRR
+abs/1506.02142, 2015. [pdf]. 78
+X. Glorot and Y. Bengio. Understanding the dif-
+ficulty of training deep feedforward neural
+networks. In
+International Conference on Arti-
+,2010.
+ficialIntelligenceandStatistics(AISTATS)
+[pdf]. 44, 62
+X. Glorot, A. Bordes, and Y. Bengio. Deep Sparse
+Rectifier Neural Networks. In
+International
+Conference on Artificial Intelligence and Statis-
+, 2011. [pdf]. 71
+tics (AISTATS)
+A. Gomez, M. Ren, R. Urtasun, and R. Grosse.
+The Reversible Residual Network: Backprop-
+agation Without Storing Activations. ,
+CoRR
+abs/1707.04585, 2017. [pdf]. 43
+I. J. Goodfellow, J. Pouget-Abadie, M. Mirza,
+et al. Generative Adversarial Networks. ,
+CoRR
+abs/1406.2661, 2014. [pdf]. 160
+167
+
+--- Page 168 ---
+A. Gu and T. Dao. Mamba: Linear-Time Se-
+quence Modeling with Selective State Spaces.
+, abs/2312.00752, 2023. [pdf]. 159
+CoRR
+A. Gu, K. Goel, and C. Ré. Efficiently Modeling
+Long Sequences with Structured State Spaces.
+, abs/2111.00396, 2021. [pdf]. 159
+CoRR
+K. He, X. Zhang, S. Ren, and J. Sun. Deep Resid-
+ual Learning for Image Recognition. ,
+CoRR
+abs/1512.03385, 2015. [pdf]. 52, 84, 85, 103,
+105
+D. Hendrycks and K. Gimpel. Gaussian Error
+Linear Units (GELUs). , abs/1606.08415,
+CoRR
+2016. [pdf]. 73
+D. Hendrycks, K. Zhao, S. Basart, et al. Natural
+Adversarial Examples. , abs/1907.07174,
+CoRR
+2019. [pdf]. 132
+J. Ho, A. Jain, and P. Abbeel. Denoising Diffusion
+Probabilistic Models. , abs/2006.11239,
+CoRR
+2020. [pdf]. 142, 143, 144
+S. Hochreiter and J. Schmidhuber. Long Short-
+TermMemory. , 9(8):1735–
+NeuralComputation
+1780, 1997. [pdf]. 158
+N. Houlsby, A. Giurgiu, S. Jastrzebski, et al.
+Parameter-Efficient Transfer Learning for
+NLP. , abs/1902.00751, 2019. [pdf]. 153
+CoRR
+168
+
+--- Page 169 ---
+E. Hu, Y. Shen, P. Wallis, et al. LoRA: Low-Rank
+Adaptation of Large Language Models. ,
+CoRR
+abs/2106.09685, 2021. [pdf]. 153
+G. Ilharco, M. Ribeiro, M. Wortsman, et al. Edit-
+ing Models with Task Arithmetic. ,
+CoRR
+abs/2212.04089, 2022. [pdf]. 156
+S. Ioffe and C. Szegedy. Batch Normalization: Ac-
+celerating Deep Network Training by Reduc-
+ing Internal Covariate Shift. In
+International
+, 2015.
+Conference on Machine Learning (ICML)
+[pdf]. 80
+A.Jiang, A.Sablayrolles, A.Mensch, etal. Mistral
+7B. , abs/2310.06825, 2023. [pdf]. 157
+CoRR
+J. Kaplan, S. McCandlish, T. Henighan, et al. Scal-
+ing Laws for Neural Language Models. ,
+CoRR
+abs/2001.08361, 2020. [pdf]. 52, 53
+A. Katharopoulos, A. Vyas, N. Pappas, and
+F. Fleuret. Transformers are RNNs: Fast Au-
+toregressive Transformers with Linear Atten-
+tion. In
+Proceedings of the International Confer-
+, pages 5294–
+ence on Machine Learning (ICML)
+5303, 2020. [pdf]. 91
+D. Kingma and J. Ba. Adam: A Method for
+Stochastic Optimization. , abs/1412.6980,
+CoRR
+2014. [pdf]. 39
+169
+
+--- Page 170 ---
+D. P. Kingma and M. Welling. Auto-Encoding
+Variational Bayes. , abs/1312.6114, 2013.
+CoRR
+[pdf]. 160
+T. Kojima, S. Gu, M. Reid, et al. Large Lan-
+guage Models are Zero-Shot Reasoners. ,
+CoRR
+abs/2205.11916, 2022. [pdf]. 149
+A. Krizhevsky, I. Sutskever, and G. Hinton. Ima-
+geNet Classification with Deep Convolutional
+Neural Networks. In
+Neural Information Pro-
+, 2012. [pdf]. 8, 101
+cessing Systems (NIPS)
+Y. LeCun, B. Boser, J. S. Denker, et al. Back-
+propagation applied to handwritten zip code
+recognition. , 1(4):541–
+Neural Computation
+551, 1989. [pdf]. 8
+Y. LeCun, L. Bottou, Y. Bengio, and P. Haffner.
+Gradient-based learning applied to document
+recognition. , 86(11):
+Proceedings of the IEEE
+2278–2324, 1998. [pdf]. 101, 102
+P. Lewis, E. Perez, A. Piktus, et al. Retrieval-
+Augmented Generation for Knowledge-
+Intensive NLP Tasks. , abs/2005.11401,
+CoRR
+2020. [pdf]. 149
+W. Liu, D. Anguelov, D. Erhan, et al. SSD: Single
+ShotMultiBoxDetector. ,abs/1512.02325,
+CoRR
+2015. [pdf]. 121, 123
+170
+
+--- Page 171 ---
+Llama.cpp. Llama.cpp git repository, June 2023.
+[web]. 150, 151
+J. Long, E. Shelhamer, and T. Darrell. Fully Con-
+volutional Networks for Semantic Segmenta-
+tion. , abs/1411.4038, 2014. [pdf]. 84, 85,
+CoRR
+127
+S. Ma, H. Wang, L. Ma, et al. The Era of 1-bit
+LLMs: All Large Language Models are in 1.58
+Bits. , abs/2402.17764, 2024. [pdf]. 152
+CoRR
+A. L. Maas, A. Y. Hannun, and A. Y. Ng. Rec-
+tifier nonlinearities improve neural network
+acoustic models. In
+proceedings of the ICML
+Workshop on Deep Learning for Audio, Speech
+, 2013. [pdf]. 72
+and Language Processing
+V. Mnih, K. Kavukcuoglu, D. Silver, et al. Human-
+level control through deep reinforcement
+learning. , 518(7540):529–533, February
+Nature
+2015. [pdf]. 135, 136
+A. Nichol, P. Dhariwal, A. Ramesh, et al. GLIDE:
+Towards Photorealistic Image Generation and
+Editing with Text-Guided Diffusion Models.
+, abs/2112.10741, 2021. [pdf]. 145
+CoRR
+L. Ouyang, J. Wu, X. Jiang, et al. Training lan-
+guage models to follow instructions with hu-
+171
+
+--- Page 172 ---
+man feedback. , abs/2203.02155, 2022.
+CoRR
+[pdf]. 141
+R. Pascanu, T. Mikolov, and Y. Bengio. On the dif-
+ficulty of training recurrent neural networks.
+In
+International Conference on Machine Learn-
+, 2013. [pdf]. 44
+ing (ICML)
+A. Radford, J. Kim, C. Hallacy, et al. Learn-
+ing Transferable Visual Models From Natural
+Language Supervision. , abs/2103.00020,
+CoRR
+2021. [pdf]. 131, 133
+A. Radford, J. Kim, T. Xu, et al. Robust Speech
+Recognition via Large-Scale Weak Supervi-
+sion. , abs/2212.04356, 2022. [pdf]. 129
+CoRR
+A. Radford, K. Narasimhan, T. Salimans, and
+I. Sutskever. Improving Language Understand-
+ing by Generative Pre-Training, 2018. [pdf].
+109, 112, 139
+A. Radford, J. Wu, R. Child, et al. Language
+Models are Unsupervised Multitask Learners,
+2019. [pdf]. 112, 162
+O. Ronneberger, P. Fischer, and T. Brox. U-Net:
+Convolutional Networks for Biomedical Im-
+age Segmentation. In
+Medical Image Comput-
+, 2015.
+ing and Computer-Assisted Intervention
+[pdf]. 84, 85, 127
+172
+
+--- Page 173 ---
+P. Sahoo, A. Singh, S. Saha, et al. A Systematic
+Survey of Prompt Engineering in Large Lan-
+guage Models: Techniques and Applications.
+, abs/2402.07927, 2024. [pdf]. 147
+CoRR
+F. Scarselli, M. Gori, A. C. Tsoi, et al. The Graph
+Neural Network Model.
+IEEE Transactions
+, 20(1):61–80, 2009.
+on Neural Networks (TNN)
+[pdf]. 161
+R. Sennrich, B. Haddow, and A. Birch. Neural
+Machine Translation of Rare Words with Sub-
+word Units. , abs/1508.07909, 2015. [pdf].
+CoRR
+34
+J. Sevilla, L. Heim, A. Ho, et al. Compute Trends
+Across Three Eras of Machine Learning. ,
+CoRR
+abs/2202.05924, 2022. [pdf]. 8, 52, 54
+J. Sevilla, P. Villalobos, J. F. Cerón, et al. Param-
+eter, Compute and Data Trends in Machine
+Learning, May 2023. [web]. 55
+K. Simonyan and A. Zisserman. Very Deep Con-
+volutional Networks for Large-Scale Image
+Recognition. , abs/1409.1556, 2014. [pdf].
+CoRR
+101
+N. Srivastava, G. Hinton, A. Krizhevsky, et al.
+Dropout: A Simple Way to Prevent Neural
+173
+
+--- Page 174 ---
+Networks from Overfitting.
+Journal of Ma-
+, 15:1929–1958,
+chine Learning Research (JMLR)
+2014. [pdf]. 77
+M. Telgarsky. Benefits of depth in neural net-
+works. , abs/1602.04485, 2016. [pdf]. 47
+CoRR
+H. Touvron, T. Lavril, G. Izacard, et al. LLaMA:
+OpenandEfficientFoundationLanguageMod-
+els. , abs/2302.13971, 2023. [pdf]. 151
+CoRR
+A. Vaswani, N. Shazeer, N. Parmar, et al. Atten-
+tion Is All You Need. , abs/1706.03762,
+CoRR
+2017. [pdf]. 84, 87, 97, 108, 109, 110
+J. Wei, X. Wang, D. Schuurmans, et al. Chain of
+Thought Prompting Elicits Reasoning in Large
+Language Models. , abs/2201.11903, 2022.
+CoRR
+[pdf]. 149
+B. Xu, A. Yang, J. Lin, et al. ExpertPrompting: In-
+structing Large Language Models to be Distin-
+guished Experts. , abs/2305.14688, 2023.
+CoRR
+[pdf]. 147
+P. Yadav, D. Tam, L. Choshen, et al. TIES-
+Merging: Resolving Interference When Merg-
+ing Models. , abs/2306.01708, 2023. [pdf].
+CoRR
+157
+L. Yu, B. Yu, H. Yu, et al. Language Models
+are Super Mario: Absorbing Abilities from
+174
+
+--- Page 175 ---
+Homologous Models as a Free Lunch. ,
+CoRR
+abs/2311.03099, 2023. [pdf]. 157
+J. Zbontar, L. Jing, I. Misra, et al. Barlow Twins:
+Self-Supervised Learning via Redundancy Re-
+duction. , abs/2103.03230, 2021. [pdf].
+CoRR
+162
+M. D. Zeiler and R. Fergus. Visualizing and Un-
+derstanding Convolutional Networks. In
+Eu-
+,
+ropean Conference on Computer Vision (ECCV)
+2014. [pdf]. 69
+H. Zhao, J. Shi, X. Qi, et al. Pyramid Scene
+Parsing Network. , abs/1612.01105, 2016.
+CoRR
+[pdf]. 127, 128
+J. Zhou, C. Wei, H. Wang, et al. iBOT: Im-
+age BERT Pre-Training with Online Tokenizer.
+, abs/2111.07832, 2021. [pdf]. 163
+CoRR
+175

@@ -1,0 +1,132 @@
+--- Page 20 ---
+2
+Chapter
+Efficient
+Computation
+From an implementation standpoint, deep learn-
+ing is about executing heavy computations with
+largeamountsofdata. TheGraphicalProcessing
+Units (GPUs) have been instrumental in the suc-
+cess of the field by allowing such computations
+to be run on affordable hardware.
+The importance of their use, and the resulting
+technical constraints on the computations that
+can be done efficiently, force the research in the
+field to constantly balance mathematical sound-
+ness and implementability of novel methods.
+20
+
+--- Page 21 ---
+2.1 GPUs, TPUs, and batches
+Graphical Processing Units were originally de-
+signed for real-time image synthesis, which re-
+quires highly parallel architectures that happen
+to be well suited for deep models. As their usage
+for AI has increased, GPUs have been equipped
+with dedicated tensor cores, and deep-learning
+specialized chips such as Google’s Tensor Pro-
+cessing Units (TPUs) have been developed.
+A GPU possesses several thousand parallel units
+and its own fast memory. The limiting factor
+is usually not the number of computing units,
+but the read-write operations to memory. The
+slowest link is between the CPU memory and
+the GPU memory, and consequently one should
+avoid copying data across devices. Moreover,
+the structure of the GPU itself involves multiple
+levels of cache memory, which are smaller but
+faster, and computation should be organized to
+avoid copies between these different caches.
+This is achieved, in particular, by organizing the
+computation in batches of samples that can fit
+entirely in the GPU memory and are processed
+in parallel. When an operator combines a sample
+and model parameters, both have to be moved
+to the cache memory near the actual computing
+21
+
+--- Page 22 ---
+units. Proceeding by batches allows for copying
+themodelparametersonlyonce, insteadofdoing
+it for each sample. In practice, a GPU processes
+a batch that fits in memory almost as quickly as
+it would process a single sample.
+A standard GPU has a theoretical peak perfor-
+mance of 1013– 1014 floating-point operations
+(FLOPs) per second, and its memory typically
+ranges from to gigabytes. The standard
+8 80
+FP32 encoding of float numbers is on bits, but
+32
+empirical results show that using encoding on
+bits, or even less for some operands, does not
+16
+degrade performance.
+We will come back in § 3.7 to the large size of
+deep architectures.
+22
+
+--- Page 23 ---
+2.2 Tensors
+GPUs anddeep learning frameworks such as Py-
+Torch or JAX manipulate the quantities to be
+processed by organizing them as tensors, which
+are series of scalars arranged along several dis-
+crete axes. They are elements of RN ×···×N
+1 D
+that generalize the notion of vector and matrix.
+Tensors are used to represent both the signals
+to be processed, the trainable parameters of the
+models, and the intermediate quantities they
+compute. The latter are called activations, in
+reference to neuronal activations.
+For instance, a time series is naturally encoded
+as a tensor, or, for historical reasons, as a
+T ×D
+tensor, where is its duration and is
+D×T T D
+thedimension ofthefeaturerepresentationatev-
+ery time step, often referred to as the number of
+channels. Similarly, a 2D-structured signal can
+be represented as a tensor, where
+D×H ×W H
+and are its height and width. An RGB image
+W
+would correspond to , but the number of
+D = 3
+channels can grow up to several thousands in
+large models.
+Adding more dimensions allows for the represen-
+tation of series of objects. For example, fifty RGB
+images of resolution can be encoded as
+32×24
+23
+
+--- Page 24 ---
+a tensor.
+50×3×24×32
+Deep learning libraries provide a large number
+of operations that encompass standard linear
+algebra, complex reshaping and extraction, and
+deep-learningspecificoperations, someofwhich
+we will see in Chapter 4. The implementation of
+tensors separates the shape representation from
+the storage layout of the coefficients in mem-
+ory, which allows many reshaping, transposing,
+and extraction operations to be done without
+coefficient copying, hence extremely rapidly.
+In practice, virtually any computation can be
+decomposed into elementary tensor operations,
+which avoids non-parallel loops at the language
+level and poor memory management.
+Besides being convenient tools, tensors are
+instrumental in achieving computational effi-
+ciency. All the people involved in the develop-
+ment of an operational deep model, from the
+designers of the drivers, libraries, and models
+to those of the computers and chips, know that
+the data will be manipulated as tensors. The
+resulting constraints on locality and block de-
+composability enable all the actors in this chain
+to come up with optimal designs.
+24

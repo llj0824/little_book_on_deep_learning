@@ -1,0 +1,868 @@
+--- Page 25 ---
+3
+Chapter
+Training
+As introduced in § 1.1, training a model consists
+of minimizing a loss which reflects the
+ℒ(w)
+performance of the predictor on a train-
+f(·;w)
+ing set .
+𝒟
+Sincemodelsareusuallyextremelycomplex, and
+their performance is directly related to how well
+the loss is minimized, this minimization is a key
+challenge, which involves both computational
+and mathematical difficulties.
+25
+
+--- Page 26 ---
+3.1 Losses
+The example of the mean squared error from
+Equation 1.1 is a standard loss for predicting a
+continuous value.
+For density modeling, the standard loss is the
+likelihood of the data. If is to be inter-
+f(x;w)
+preted as a normalized log-probability or log-
+density, the loss is the opposite of the sum of its
+values over training samples, which corresponds
+to the likelihood of the data-set.
+Cross-entropy
+For classification, the usual strategy is that the
+output of the model is a vector with one com-
+ponent per class , interpreted as the
+f(x;w) y
+y
+logarithm of a non-normalized probability, or
+logit.
+With the input signal and the class to pre-
+X Y
+dict, we can then compute from an estimate
+f
+of the posterior probabilities:
+expf(x;w)
+ˆ y
+P(Y = y | X = x) = .
+(cid:80)
+expf(x;w)
+z z
+This expression is generally called the softmax,
+or more adequately, thesoftargmax, of the logits.
+26
+
+--- Page 27 ---
+To be consistent with this interpretation, the
+model should be trained to maximize the proba-
+bility of the true classes, hence to minimize the
+cross-entropy, expressed as:
+N
+1 (cid:88)
+ˆ
+ℒ (w) = − logP(Y = y | X = x )
+ce n n
+N
+n=1
+N
+1 (cid:88) expf(x ;w)
+n y
+= −log n .
+(cid:80)
+N expf(x ;w)
+z n z
+n=1
+(cid:124) (cid:123)(cid:122) (cid:125)
+L (f(x ;w),y )
+ce n n
+Contrastive loss
+In certain setups, even though the value to be
+predicted is continuous, the supervision takes
+the form of ranking constraints. The typical do-
+main where this is the case is metric learning,
+where the objective is to learn a measure of dis-
+tance between samples such that a sample
+x
+a
+from a certain semantic class is closer to any
+sample of the same class than to any sample
+x
+b
+from another class. For instance, and
+x x x
+c a b
+can be two pictures of a certain person, and a
+x
+c
+picture of someone else.
+The standard approach for such cases is to min-
+imize a contrastive loss, in that case, for in-
+stance, the sum over triplets , such
+(x ,x ,x )
+a b c
+27
+
+--- Page 28 ---
+that , of
+y = y ̸= y
+a b c
+max(0,1−f(x ,x ;w)+f(x ,x ;w)).
+a c a b
+This quantity will be strictly positive unless
+.
+f(x ,x ;w) ≥ 1+f(x ,x ;w)
+a c a b
+Engineering the loss
+Usually, the loss minimized during training is
+not the actual quantity one wants to optimize
+ultimately, but a proxy for which finding the best
+model parameters is easier. For instance, cross-
+entropy is the standard loss for classification,
+even though the actual performance measure is
+a classification error rate, because the latter has
+no informative gradient, a key requirement as
+we will see in § 3.3.
+It is also possible to add terms to the loss that
+depend on the trainable parameters of the model
+themselves to favor certain configurations.
+The weight decay regularization, for instance,
+consists of adding to the loss a term proportional
+to the sum of the squared parameters. This can
+be interpreted as having a Gaussian Bayesian
+prior on the parameters, which favors smaller
+values and thereby reduces the influence of the
+data. This degrades performance on the train-
+28
+
+--- Page 29 ---
+ing set, but reduces the gap between the per-
+formance in training and that on new, unseen
+data.
+29
+
+--- Page 30 ---
+3.2 Autoregressive models
+A key class of methods, particularly for deal-
+ing with discrete sequences in natural language
+processing and computer vision, are the autore-
+gressive models,
+The chain rule for probabilities
+Such models put to use thechain rule from prob-
+ability theory:
+P(X = x ,X = x ,...,X = x ) =
+1 1 2 2 T T
+P(X = x )
+1 1
+×P(X = x | X = x )
+2 2 1 1
+...
+×P(X = x | X = x ,...,X = x ).
+T T 1 1 T−1 T−1
+Although this decomposition is valid for a ran-
+dom sequence of any type, it is particularly effi-
+cient when the signal of interest is a sequence
+of tokens from a finite vocabulary .
+{1,...K}
+With the convention that the additional token
+∅
+stands for an “unknown” quantity, we can rep-
+resent the event as the
+{X = x ,...,X = x }
+1 1 t t
+vector .
+(x ,...,x ,∅,...,∅)
+1 t
+30
+
+--- Page 31 ---
+Then, a model
+T RK
+f : {∅,1,...,K} →
+which, given such an input, computes a vector
+of logits corresponding to
+l K
+t
+ˆ
+P(X | X = x ,...,X = x ),
+t 1 1 t−1 t−1
+allows to sample one token given the previous
+ones.
+The chain rule ensures that by sampling to-
+T
+kens , one at a time given the previously sam-
+x
+t
+pled , we get a sequence that follows
+x ,...,x
+1 t−1
+the joint distribution. This is an autoregressive
+generative model.
+Training such a model can be done by minimiz-
+ing the sum across training sequences and time
+steps of the cross-entropy loss
+(cid:0) (cid:1)
+L f(x ,...,x ,∅,...,∅;w),x ,
+ce 1 t−1 t
+which is formally equivalent to maximizing the
+likelihood of the true s.
+x
+t
+The value that is classically monitored is not the
+cross-entropy itself, but the perplexity, which is
+defined as the exponential of the cross-entropy.
+It corresponds to the number of values of a uni-
+form distribution with the same entropy, which
+is generally more interpretable.
+31
+
+--- Page 32 ---
+l l l ... l l
+1 2 3 T−1 T
+f
+x x ... x x
+1 2 T−2 T−1
+Figure 3.1: An autoregressive model f, is causal if a
+time step x of the input sequence modulates the pre-
+t
+dicted logits l only if s>t, as depicted by the blue
+s
+arrows. This allows computing the distributions at all
+the time steps in one pass during training. During sam-
+pling, however, thel andx arecomputedsequentially,
+t t
+the latter sampled with the former, as depicted by the
+red arrows.
+Causal models
+The training procedure we just described re-
+quires a different input for each , and the bulk
+t
+of the computation done for t < t′ is repeated for
+t′. This is extremely inefficient since
+T
+is often
+of the order of hundreds or thousands.
+The standard strategy to address this issue is to
+design a model that predicts all the vectors of
+f
+logits at once, that is:
+l ,...,l
+1 T
+T RT×K
+f : {1,...,K} → ,
+32
+
+--- Page 33 ---
+but with a computational structure such that the
+computed logits for depend only on the
+l x
+t t
+input values .
+x ,...,x
+1 t−1
+Such a model is called causal, since it corre-
+sponds, in the case of temporal series, to not
+lettingthefutureinfluencethepast, asillustrated
+in Figure 3.1.
+The consequence is that the output at every posi-
+tionistheonethatwouldbeobtainediftheinput
+were only available up to before that position.
+During training, it allows one to compute the
+output for a full sequence and to maximize the
+predicted probabilities of all the tokens of that
+same sequence, which again boils down to mini-
+mizing the sum of the per-token cross-entropy.
+Note that, for the sake of simplicity, we have
+defined as operating on sequences of a fixed
+f
+length . However, models used in practice,
+T
+such as the transformers we will see in § 5.3, are
+able to process sequences of arbitrary length.
+Tokenizer
+One important technical detail when dealing
+with natural languages is that the representation
+as tokens can be done in multiple ways, ranging
+from the finest granularity of individual symbols
+33
+
+--- Page 34 ---
+to entire words. The conversion to and from the
+token representation is carried out by a separate
+algorithm called a tokenizer.
+A standard method is the Byte Pair Encoding
+(BPE) [Sennrich et al., 2015] that constructs to-
+kens by hierarchically merging groups of char-
+acters, trying to get tokens that represent frag-
+ments of words of various lengths but of similar
+frequencies, allocating tokens to long frequent
+fragments as well as to rare individual symbols.
+34
+
+--- Page 35 ---
+3.3 Gradient descent
+Except in specific cases like the linear regression
+we saw in § 1.2, the optimal parameters w∗ do
+nothaveaclosed-formexpression. Inthegeneral
+case, the tool of choice to minimize a function is
+gradient descent. It starts by initializing the pa-
+rameters with a random , and then improves
+w
+0
+this estimate by iterating gradient steps, each
+consisting of computing the gradient of the loss
+with respect to the parameters, and subtracting
+a fraction of it:
+(3.1)
+w = w −η∇ℒ (w ).
+n+1 n |w n
+This procedure corresponds to moving the cur-
+rent estimate a bit in the direction that locally
+decreases maximally, as illustrated in Fig-
+ℒ(w)
+ure 3.2.
+Learning rate
+The hyper-parameter is called the learning
+η
+rate. It is a positive value that modulates how
+quickly the minimization is done, and must be
+chosen carefully.
+If it is too small, the optimization will be slow
+at best, and may be trapped in a local minimum
+early. If it is too large, the optimization may
+35
+
+--- Page 36 ---
+w
+ℒ(w)
+w
+Figure 3.2: At every point w, the gradient ∇ℒ (w) is
+|w
+in the direction that maximizes the increase of ℒ, or-
+thogonal to the level curves (top). The gradient descent
+minimizes ℒ(w) iteratively by subtracting a fraction
+of the gradient at every step, resulting in a trajectory
+that follows the steepest descent (bottom).
+36
+
+--- Page 37 ---
+bounce around a good minimum and never de-
+scendintoit. Aswewillseein§3.6, itcandepend
+on the iteration number .
+n
+Stochastic Gradient Descent
+Allthelossesusedinpracticecanbeexpressedas
+an average of a loss per small group of samples,
+or per sample such as:
+N
+1 (cid:88)
+ℒ(w) = 𝓁 (w),
+n
+N
+n=1
+where for some , and
+𝓁 (w) = L(f(x ;w),y ) L
+n n n
+the gradient is then:
+N
+1 (cid:88)
+(3.2)
+∇ℒ (w) = ∇𝓁 (w).
+|w n|w
+N
+n=1
+The resulting gradient descent would compute
+exactly the sum in Equation 3.2, which is usu-
+ally computationally heavy, and then update the
+parameters according to Equation 3.1. However,
+under reasonable assumptions of exchangeabil-
+ity, for instance, if the samples have been prop-
+erly shuffled, any partial sum of Equation 3.2
+is an unbiased estimator of the full sum, albeit
+noisy. So, updating the parameters from partial
+sums corresponds to doing more gradient steps
+37
+
+--- Page 38 ---
+for the same computational budget, with noisier
+estimates of the gradient. Due to the redundancy
+in the data, this happens to be a far more efficient
+strategy.
+We saw in § 2.1 that processing a batch of sam-
+ples small enough to fit in the computing de-
+vice’s memory is generally as fast as processing
+a single one. Hence, the standard approach is to
+split the full set into batches, and to update
+𝒟
+the parameters from the estimate of the gradient
+computed from each. This is called mini-batch
+stochastic gradient descent, or stochastic gradi-
+ent descent (SGD) for short.
+It is important to note that this process is ex-
+tremely gradual, and that the number of mini-
+batches and gradient steps are typically of the
+order of several million.
+As with many algorithms, intuition breaks down
+in high dimensions, and although it may seem
+that this procedure would be easily trapped in
+a local minimum, in reality, due to the number
+of parameters, the design of the models, and
+the stochasticity of the data, its efficiency is far
+greater than one might expect.
+Plenty of variations of this standard strategy
+have been proposed. The most popular one is
+38
+
+--- Page 39 ---
+Adam [Kingma and Ba, 2014], which keeps run-
+ning estimates of the mean and variance of each
+component of the gradient, and normalizes them
+automatically, avoiding scaling issues and differ-
+ent training speeds in different parts of a model.
+39
+
+--- Page 40 ---
+3.4 Backpropagation
+Using gradient descent requires a tech-
+nical means to compute where
+∇𝓁 (w)
+|w
+. Given that and are
+𝓁 = L(f(x;w);y) f L
+both compositions of standard tensor opera-
+tions, as for any mathematical expression, the
+chain rule from differential calculus allows us to
+get an expression of it.
+For the sake of making notation lighter, we will
+not specify at which point gradients are com-
+puted, since the context makes it clear.
+f(d)(·;w )
+d
+x(d−1) x(d)
+×J
+f(d)|x
+∇𝓁 ∇𝓁
+|x(d−1) |x(d)
+×J
+f(d)|w
+∇𝓁
+|w
+d
+Figure 3.3: Given a model f =f(D)◦···◦f(1), the
+forward pass computes the outputs x(d) of the f(d) in
+order (top, black). The backward pass computes the
+gradients of the loss with respect to the activations x(d)
+(bottom, blue) and the parameters w (bottom, red)
+d
+backward by multiplying them by the Jacobians.
+40
+
+--- Page 41 ---
+Forward and backward passes
+Consider the simple case of a composition of
+mappings:
+(D) (D−1) (1)
+f = f ◦f ◦ ··· ◦f .
+The output of can be computed by start-
+f(x;w)
+ing with x(0) = x and applying iteratively:
+(cid:16) (cid:17)
+(d) (d) (d−1)
+x = f x ;w ,
+d
+with x(D) as the final value.
+The individual scalar values of these interme-
+diate results x(d) are traditionally called acti-
+vations in reference to neuron activations, the
+value is thedepth of the model, the individual
+D
+mappings f(d) are referred to as layers, as we
+will see in § 4.1, and their sequential evaluation
+is the forward pass (see Figure 3.3, top).
+Conversely, the gradient of the loss
+∇𝓁
+|x(d−1)
+with respect to the output x(d−1) of f(d−1) is
+the product of the gradient with respect
+∇𝓁
+|x(d)
+to the output of f(d) multiplied by the Jacobian
+J of f(d−1) with respect to its variable
+f(d−1)|x
+. Thus, the gradients with respect to the out-
+x
+puts of all the f(d)s can be computed recursively
+backward, starting with .
+∇𝓁 = ∇L
+|x(D) |x
+41
+
+--- Page 42 ---
+And the gradient that we are interested in for
+training, that is , is the gradient with re-
+∇𝓁
+|w
+d
+spect to the output of f(d) multiplied by the Ja-
+cobian J of f(d) with respect to the param-
+f(d)|w
+eters.
+This iterative computation of the gradients with
+respect to the intermediate activations, com-
+bined with that of the gradients with respect
+to the layers’ parameters, is the backward pass
+(see Figure 3.3, bottom). The combination of
+this computation with the procedure of gradient
+descent is called backpropagation.
+In practice, the implementation details of the
+forward and backward passes are hidden from
+programmers. Deep learning frameworks are
+able to automatically construct the sequence of
+operations to compute gradients.
+A particularly convenient algorithm isAutograd
+[Baydin et al., 2015], which tracks tensor opera-
+tions and builds, on the fly, the combination of
+operatorsforgradients. Thankstothis, apieceof
+imperative programming that manipulates ten-
+sors can automatically compute the gradient of
+any quantity with respect to any other.
+42
+
+--- Page 43 ---
+Resource usage
+Regarding the computational cost, as we will
+see, the bulk of the computation goes into linear
+operations, each requiring one matrix product
+for the forward pass and two for the products by
+the Jacobians for the backward pass, making the
+latter roughly twice as costly as the former.
+The memory requirement during inference is
+roughly equal to that of the most demanding
+individual layer. For training, however, the back-
+ward pass requires keeping the activations com-
+puted during the forward pass to compute the
+Jacobians, which results in a memory usage that
+grows proportionally to the model’s depth. Tech-
+niques exist to trade the memory usage for com-
+putation by either relying on reversible layers
+[Gomez et al., 2017], or using checkpointing,
+which consists of storing activations for some
+layersonlyandrecomputingtheothersonthefly
+with partial forward passes during the backward
+pass [Chen et al., 2016].
+Vanishing gradient
+A key historical issue when training a large net-
+work is that when the gradient propagates back-
+wards through an operator, it may be scaled by a
+43
+
+--- Page 44 ---
+multiplicative factor, and consequently decrease
+orincreaseexponentiallywhenittraversesmany
+layers. A standard method to prevent it from
+exploding is gradient norm clipping, which con-
+sists of re-scaling the gradient to set its norm to
+a fixed threshold if it is above it [Pascanu et al.,
+2013].
+When the gradient decreases exponentially, this
+iscalledthevanishinggradient, anditmaymake
+the training impossible, or, in its milder form,
+cause different parts of the model to be up-
+dated at different speeds, degrading their co-
+adaptation [Glorot and Bengio, 2010].
+As we will see in Chapter 4, multiple techniques
+have been developed to prevent this from hap-
+pening, reflecting a change in perspective that
+was crucial to the success of deep-learning: in-
+stead of trying to improve generic optimization
+methods, the effort shifted to engineering the
+models themselves to make them optimizable.
+44
+
+--- Page 45 ---
+3.5 The value of depth
+As the term “deep learning” indicates, useful
+models are generally compositions of long se-
+ries of mappings. Training them with gradient
+descent results in a sophisticated co-adaptation
+of the mappings, even though this procedure is
+gradual and local.
+We can illustrate this behavior with a simple
+model R2
+→
+R2 that combines eight layers, each
+multiplying its input by a matrix and ap-
+2×2
+plying Tanh per component, with a final linear
+classifier. This is a simplified version of the stan-
+dard Multi-Layer Perceptron that we will see in
+§ 5.1.
+If we train this model with SGD and cross-en-
+tropy on a toy binary classification task (Figure
+3.4, top left), the matrices co-adapt to deform the
+space until the classification is correct, which
+implies that the data have been made linearly
+separable before the final affine operation (Fig-
+ure 3.4, bottom right).
+Such an example gives a glimpse of what a deep
+model can achieve; however, it is partially mis-
+leading due to the low dimension of both the sig-
+nal to process and the internal representations.
+Everything is kept in 2D here for the sake of
+45
+
+--- Page 46 ---
+d = 0 d = 1 d = 2
+d = 3 d = 4 d = 5
+d = 6 d = 7 d = 8
+Figure 3.4:
+Each plot shows the deformation of the
+space and the resulting positioning of the training
+points in R2 after d layers of processing, starting with
+the input to the model itself (top left). The oblique line
+in the last plot (bottom right) shows the final affine
+decision.
+46
+
+--- Page 47 ---
+visualization, while real models take advantage
+of representations in high dimensions, which, in
+particular, facilitates the optimization by provid-
+ing many degrees of freedom.
+Empirical evidence accumulated over twenty
+years demonstrates that state-of-the-art perfor-
+mance across application domains necessitates
+models with tens of layers, such as residual net-
+works (see § 5.2) or Transformers (see § 5.3).
+Theoretical results show that, for a fixed com-
+putational budget or number of parameters, in-
+creasing the depth leads to a greater complexity
+of the resulting mapping [Telgarsky, 2016].
+47
+
+--- Page 48 ---
+3.6 Training protocols
+Training a deep network requires defining a pro-
+tocol to make the most of computation and data,
+and to ensure that performance will be good on
+new data.
+As we saw in § 1.3, the performance on the train-
+ing samples may be misleading, so in the sim-
+plest setup one needs at least two sets of samples:
+one is a training set, used to optimize the model
+parameters, andtheotherisatestset, toevaluate
+the performance of the trained model.
+Additionally, there are usually hyper-parame-
+ters to adapt, in particular, those related to the
+model architecture, the learning rate, and the
+regularization terms in the loss. In that case,
+one needs a validation set that is disjoint from
+both the training and test sets to assess the best
+configuration.
+The full training is usually decomposed into
+epochs, each of which corresponds to going
+through all the training examples once. The
+usual dynamic of the losses is that the training
+loss decreases as long as the optimization runs,
+while the validation loss may reach a minimum
+after a certain number of epochs and then start
+to increase, reflecting an overfitting regime, as
+48
+
+--- Page 49 ---
+Overfitting
+Loss
+Validation
+Training
+Number of epochs
+Figure 3.5:
+As training progresses, a model’s perfor-
+mance is usually monitored through losses. The train-
+ing loss is the one driving the optimization process and
+goes down, while the validation loss is estimated on
+an other set of examples to assess the overfitting of
+the model. Overfitting appears when the model starts
+to take into account random structures specific to the
+training set at hand, resulting in the validation loss
+starting to increase.
+introduced in § 1.3 and illustrated in Figure 3.5.
+Paradoxically, although they should suffer from
+severe overfitting due to their capacity, large
+models usually continue to improve as training
+progresses. This may be due to the inductive
+bias of the model becoming the main driver of
+optimization when performance is near perfect
+49
+
+--- Page 50 ---
+on the training set [Belkin et al., 2018].
+An important design choice is the learning rate
+schedule during training, that is, the specifica-
+tion of the value of thelearning rate at each iter-
+ation of the gradient descent. The general policy
+is that the learning rate should be initially large
+to avoid having the optimization being trapped
+in a bad local minimum early, and that it should
+get smaller so that the optimized parameter val-
+ues do not bounce around and reach a good min-
+imum in a narrow valley of the loss landscape.
+The training of very large models may take
+months on thousands of powerful GPUs and
+haveafinancialcostofseveralmilliondollars. At
+this scale, the training may involve many man-
+ual interventions, informed, in particular, by the
+dynamics of the loss evolution.
+Fine-tuning
+It is often beneficial to adapt an already trained
+modeltoanewtask, referredtoasadownstream
+task.
+It can be because the amount of data for the
+original task is plentiful, while they are lim-
+ited for the downstream task, and the two tasks
+share enough similarities that statistical struc-
+50
+
+--- Page 51 ---
+tures learned for the first provide a good induc-
+tive bias for the second. It can also be to limit the
+training cost by reusing the patterns encoded in
+an existing model.
+Adapting a pre-trained model to a specific task
+is achieved withfine-tuning, which is a standard
+training procedure for the downstream task, but
+which starts from the pre-trained model instead
+of using a random initialization.
+This is the main strategy for most computer vi-
+sion applications which generally use a model
+pre-trained for classification on ImageNet [Deng
+et al., 2009] (see § 6.3 and § 6.4), and it is also
+how purely generative pre-trained Large Lan-
+guage Models are re-purposed as assistant-like
+models, able to produce interactive dialogues
+(see § 7.1).
+We come back to techniques to cope with lim-
+ited resources in inference and for fine-tuning
+in Chapter 8.
+51
+
+--- Page 52 ---
+3.7 The benefits of scale
+There is an accumulation of empirical results
+showing that performance, for instance, esti-
+mated through the loss on test data, improves
+with the amount of data according to remarkable
+scaling laws, as long as the model size increases
+correspondingly [Kaplan et al., 2020] (see Figure
+3.6).
+Benefiting from these scaling laws in the multi-
+billionsampleregimeispossibleinpartthanksto
+the structure of deep models which can be scaled
+up arbitrarily, as we will see, by increasing the
+number of layers or feature dimensions. But it
+is also made possible by the distributed nature
+of the computation they implement, and by the
+stochastic gradient descent, which requires only
+a fraction of the data at a time and can operate
+with datasets whose size is orders of magnitude
+greater than that of the computing device’s mem-
+ory. This has resulted in an exponential growth
+of the models, as illustrated in Figure 3.7.
+Typical vision models have – milliontrain-
+10 100
+able parameters and require 1018– 1019 FLOPs
+for training [He et al., 2015; Sevilla et al., 2022].
+Language models have from million to hun-
+100
+dreds of billions of trainable parameters and re-
+52
+
+--- Page 53 ---
+ssol
+tseT
+ssol
+tseT
+ssol
+tseT
+Compute (peta-FLOP/s-day)
+Dataset size (tokens)
+Number of parameters
+Figure3.6:
+Testlossofalanguagemodelvs. theamount
+of computation in petaflop/s-day, the dataset size in
+tokens, that is fragments of words, and the model size
+in parameters [Kaplan et al., 2020].
+53
+
+--- Page 54 ---
+Dataset Year Nb. of images Size
+ImageNet 2012 1.2M 150Gb
+Cityscape 2016 25K 60Gb
+LAION-5B 2022 5.8B 240Tb
+Dataset Year Nb. of books Size
+WMT-18-de-en 2018 14M 8Gb
+The Pile 2020 1.6B 825Gb
+OSCAR 2020 12B 6Tb
+Table3.1:
+Someexamplesofpubliclyavailabledatasets.
+The equivalent number of books is an indicative esti-
+mate for 250 pages of 2000 characters per book.
+quire 1020– 1023 FLOPsfortraining[Devlinetal.,
+2018; Brown et al., 2020; Chowdhery et al., 2022;
+Sevilla et al., 2022]. These latter models require
+machines with multiple high-end GPUs.
+Training these large models is impossible using
+datasets with a detailed ground-truth costly to
+produce, which can only be of moderate size.
+Instead, it is done with datasets automatically
+produced by combining data available on the
+internet with minimal curation, if any. These
+sets may combine multiple modalities, such as
+text and images from web pages, or sound and
+images from videos, which can be used for large-
+scale supervised training.
+As of 2024, the most powerful models are the
+54
+
+--- Page 55 ---
+1GWh
+PaLM
+1024
+GPT-3 LaMDA
+Whisper
+AlphaZero
+ViT
+1MWh
+AlphaGo CLIP-ViT
+GPT-2
+1021
+BERT
+Transformer
+GPT
+ResNet
+1KWh
+VGG16
+1018 AlexNet GoogLeNet
+2015 2020
+Year
+)POLF(
+tsoc
+gniniarT
+Figure 3.7:
+Training costs in number of FLOP of some
+landmark models [Sevilla et al., 2023]. The colors in-
+dicate the domains of application: Computer Vision
+(blue), Natural Language Processing (red), or other
+(black). The dashed lines correspond to the energy con-
+sumption using A100s SXM in 16-bit precision. For
+reference, the total electricity consumption in the US in
+2021 was 3920TWh.
+55
+
+--- Page 56 ---
+so-calledLarge Language Models (LLMs), which
+we will see in § 5.3 and § 7.1, trained on ex-
+tremely large text datasets (see Table 3.1).
+56
+
+--- Page 57 ---
+Part II
+Deep Models
+57
