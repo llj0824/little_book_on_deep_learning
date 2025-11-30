@@ -15,8 +15,9 @@ The primary goal is to break down the dense material of the book into manageable
 
 *   **`gemini_book_overview.md`**: A comprehensive global overview and roadmap of the book. It contains summaries, key concepts, and dependency maps for every chapter. Use this to orient yourself or prime the AI before diving into a specific section.
 *   **`chapters/`**: The core content. The book has been split into individual folders (e.g., `01_machine_learning/`, `05_architectures/`). Each contains:
-    *   `chapter.pdf`: The specific pages for that chapter.
-    *   `chapter.txt`: The plain text extracted from those pages (optimized for LLM context).
+    *   `chapter.pdf`: **PRIMARY SOURCE.** The specific pages for that chapter. Please refer to this file for all figures, diagrams, and visual context. It is the source of truth for visual content.
+    *   `chapter_gemini_copyedited.md`: The text content of the chapter, copy-edited for clarity.
+    *   `chapter_notes.md`: Notes and summaries generated during our study sessions.
 *   **`little_book_on_deep_learning.pdf`**: The original full source PDF.
 *   **`split_chapters.py`**: The Python utility used to generate the `chapters/` directory.
 
@@ -29,7 +30,7 @@ Start by reading `gemini_book_overview.md` or feeding it to your AI assistant to
 When studying a specific concept (e.g., "How does a Transformer work?"):
 1.  Navigate to the relevant folder (e.g., `chapters/05_architectures/`).
 2.  Open the `chapter.pdf` for reading.
-3.  If you have questions, provide the content of `chapter.txt` to your AI assistant as context.
+3.  If you have questions, provide the content of `chapter_gemini_copyedited.md` to your AI assistant as context.
 
 ### 3. Regenerating Content (Optional)
 If you need to re-run the extraction process (e.g., to adjust page ranges):
