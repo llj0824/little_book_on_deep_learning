@@ -45,8 +45,7 @@
     *   Transposed Conv: Takes one number $\to$ Pastes (stamps) a patch of weights onto the output.
     *   Where stamps overlap, values are summed.
 
----
-
+---\n
 ## 4.3 Activation Functions (The "Squiggle" Problem)
 
 ### Why do we need them?
@@ -58,7 +57,7 @@
 1.  **ReLU (Rectified Linear Unit):**
     *   Formula: $\max(0, x)$.
     *   Graph: A hard corner at 0.
-    *   **Pros:** Fast, solves Vanishing Gradient for positive numbers.
+    *   **Pros:** Fast, solves Vanishing Gradient for positive numbers (Slope is 1).
     *   **Cons:** "Dead Neurons" (if negative, gradient is 0 and it stops learning).
 2.  **Tanh:**
     *   Graph: S-shape (-1 to 1).
@@ -69,8 +68,7 @@
     *   **Graph:** Similar to ReLU but curved. Has a slight "dip" below zero because of the probability multiplication.
     *   **Note:** It does **not** normalize your data. It just uses the standard bell curve equation as a tool to draw a smooth curve.
 
----
-
+---\n
 ## 4.4 Pooling
 
 ### The Goal
@@ -85,8 +83,97 @@ To shrink the image/tensor size to reduce cost and abstract away from specific p
     *   **Operation:** Average the window.
     *   **Difference:** This is a **Linear** operation. Max Pooling is non-linear.
 
----
+---\n
+## 4.5 Dropout
 
+### The Concept
+*   **What is it?** Randomly zeroing out activations with probability $p$ during training.
+*   **Analogy:** "Learning with Erasers." It forces the student (network) not to rely on any single note (neuron) but to learn the concept broadly.
+
+### Key Details
+1.  **Training vs. Testing:**
+    *   **Training:** Dropout ON. Network is fragile.
+    *   **Testing:** Dropout OFF. Network is full strength.
+2.  **The Scaling Factor ($1/(1-p)$):**
+    *   Since we killed 50% of the signal during training, we must multiply the remaining signal by 2 to keep the "volume" consistent for the next layer.
+3.  **Spatial Dropout (for Images):**
+    *   Dropping single pixels is useless (neighbors are too similar).
+    *   We drop entire **channels** (feature maps) to force the network to learn robust features.
+
+---\n
+## 4.6 Normalizing Layers
+
+### The Problem: Internal Covariate Shift (The "Moving Target")
+*   **Concept:** Imagine the network as a bucket brigade. As Layer 1 updates its weights, the distribution of its output (the "input" for Layer 2) changes.
+*   **Coupling:** Layer 2 was learning based on the *old* distribution. Now it has to waste training time re-adjusting to the new scale/shift of Layer 1 before it can learn new patterns. The layers are too tightly coupled.
+
+### The Fix: Decoupling via Standardization
+*   **Mechanism:** Normalization forces the output of *every* layer to follow a strict standard (Mean = 0, Variance = 1).
+*   **Result:** Even if Layer 1's raw values double in size, the Normalization layer scales them back down. Layer 2 sees a stable input distribution.
+*   **Independence:** Layer 2 no longer cares about the *scale* or *shift* of Layer 1. It can focus entirely on learning relative patterns.
+*   **Analogy:** Without normalization, it's like trying to learn to catch a ball while someone keeps changing the gravity. With normalization, gravity is fixed, so you can focus 100% on the catch.
+
+### Types
+1.  **Batch Normalization (BatchNorm):**
+    *   Normalizes across the **Batch** (e.g., "Standardize red pixels across all 32 images").
+    *   **Pitfall:** Different behavior in Training (uses batch stats) vs. Testing (uses running average). Breaks with Batch Size = 1.
+2.  **Layer Normalization (LayerNorm):**
+    *   Normalizes across the **Features** (e.g., "Standardize all pixels within this single image").
+    *   **Benefit:** Consistent behavior. Great for Transformers.
+
+### The Learned Parameters ($\\gamma, \\beta$)
+*   **Concept:** After forcing the data to be Mean=0/Var=1, we give the network "control knobs" to shift it back if it wants (e.g., to Mean=5).
+*   $y = \\gamma x + \\beta$.
+
+---\n
+## 4.7 Skip Connections (The "Gradient Superhighway")
+
+### The Problem: Vanishing Gradients (Revisited)
+*   **Backpropagation (Chain Rule):** To update Layer 1, we multiply the error derivatives of all subsequent layers.
+*   **The Trap:** If those derivatives are small (< 1), multiplying them 100 times results in 0. The signal dies. Layer 1 never learns.
+
+### The Fix: Residual Connections
+*   **Logic:** $Output = F(x) + x$.
+*   **Mechanism:** We add the original input ($x$) back to the output of the layer.
+*   **Why it works:**
+    *   The derivative of $x$ is **1**.
+    *   During backprop, the `+` sign acts as a distributor. It sends the gradient through $F(x)$ (which might die) AND through the shortcut path (which carries the signal perfectly with a strength of 1).
+    *   This allows training networks with hundreds of layers (ResNet, Transformers).
+
+---\n
+## 4.8 Attention Layers (The "Teleporter")
+
+### The Concept
+*   **Problem:**
+    *   **CNNs:** Limited by local windows (need depth to see global context).
+    *   **RNNs:** Limited by sequential processing (forget the beginning by the end).
+*   **Solution:** Allow any token to look at *any* other token instantly, regardless of distance.
+*   **Mechanism:** A "Soft Hashmap."
+
+### The "Soft Hashmap" Analogy
+*   **Standard Hashmap:** `get("cat")` -> returns exactly the value for "cat".
+*   **Attention (Soft):** `get("cat")` -> returns a weighted mixture (e.g., 80% "feline", 10% "pet", 10% "fur").
+
+### The Math: $Q, K, V$
+1.  **Query ($Q$):** What I'm looking for (e.g., "concept of animal").
+2.  **Key ($K$):** What the data defines itself as (e.g., "cat").
+3.  **Value ($V$):** The actual content to retrieve.
+
+### The Operation
+$$ \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V $$
+1.  **Match ($QK^T$):** Calculate similarity (dot product) between my Query and all Keys.
+2.  **Softmax:** Convert scores to probabilities (0-100%). This is the **Attention Map**.
+3.  **Retrieve ($V$):** Calculate the weighted average of Values using those probabilities.
+
+### Multi-Head Attention
+*   **Concept:** Instead of one giant attention step, split the vector into $h$ smaller chunks.
+*   **Benefit:** Parallelism and Specialization.
+    *   Head 1 focuses on Grammar.
+    *   Head 2 focuses on Sentiment.
+    *   Head 3 focuses on Relationships.
+*   **Analogy:** 12 experts analyzing the sentence simultaneously for different things.
+
+---\n
 ## Q&A: Conceptualizing "Training" & "Parameters"
 
 ### Where do the numbers come from?
@@ -94,11 +181,14 @@ To shrink the image/tensor size to reduce cost and abstract away from specific p
 *   **Parameters:** The count of these random numbers. "100 Billion Parameters" = 100 Billion cells in the matrices.
 *   **Scale:** "Larger Training Runs" means defining bigger matrices from the start and showing them more data. We rarely "add columns" to an existing trained model.
 
-### What is Training?
-It is **not** just summing. It is a loop:
+### The Training Loop
 1.  **Forward:** Input * Random Weights = Guess ("Toaster").
 2.  **Loss:** Compare Guess vs. Truth ("Cat").
-3.  **Backward (The Key):** Calculate **Gradient**. Find out exactly which of the 100 Billion numbers caused the error.
-4.  **Update:** Nudge those numbers slightly so the guess is better next time.
+3.  **Backward (The Key):** Calculate **Gradient** using the **Chain Rule**.
+4.  **Update:** `Weight = Weight - Learning_Rate * Gradient`.
 
-Repeat billions of times until the Random Noise becomes "Smart."
+### The Chain Rule & Vanishing Gradients
+*   **Chain Rule:** To find the error for the first layer, we multiply the derivatives of all layers after it.
+    *   `Effect_A = (A->B) * (B->C) * (C->Output)`
+*   **Vanishing Gradient:** If those derivatives are small (< 1), multiplying them 100 times results in 0. The signal dies.
+*   **ReLU Fix:** ReLU has a slope of **1** (for positive numbers). $1 \times 1 \times 1 = 1$. The signal survives!
