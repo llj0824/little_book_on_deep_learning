@@ -45,7 +45,7 @@
     *   Transposed Conv: Takes one number $\to$ Pastes (stamps) a patch of weights onto the output.
     *   Where stamps overlap, values are summed.
 
----\n
+---
 ## 4.3 Activation Functions (The "Squiggle" Problem)
 
 ### Why do we need them?
@@ -68,7 +68,7 @@
     *   **Graph:** Similar to ReLU but curved. Has a slight "dip" below zero because of the probability multiplication.
     *   **Note:** It does **not** normalize your data. It just uses the standard bell curve equation as a tool to draw a smooth curve.
 
----\n
+---
 ## 4.4 Pooling
 
 ### The Goal
@@ -83,7 +83,7 @@ To shrink the image/tensor size to reduce cost and abstract away from specific p
     *   **Operation:** Average the window.
     *   **Difference:** This is a **Linear** operation. Max Pooling is non-linear.
 
----\n
+---
 ## 4.5 Dropout
 
 ### The Concept
@@ -100,7 +100,7 @@ To shrink the image/tensor size to reduce cost and abstract away from specific p
     *   Dropping single pixels is useless (neighbors are too similar).
     *   We drop entire **channels** (feature maps) to force the network to learn robust features.
 
----\n
+---
 ## 4.6 Normalizing Layers
 
 ### The Problem: Internal Covariate Shift (The "Moving Target")
@@ -125,7 +125,7 @@ To shrink the image/tensor size to reduce cost and abstract away from specific p
 *   **Concept:** After forcing the data to be Mean=0/Var=1, we give the network "control knobs" to shift it back if it wants (e.g., to Mean=5).
 *   $y = \\gamma x + \\beta$.
 
----\n
+---
 ## 4.7 Skip Connections (The "Gradient Superhighway")
 
 ### The Problem: Vanishing Gradients (Revisited)
@@ -140,7 +140,7 @@ To shrink the image/tensor size to reduce cost and abstract away from specific p
     *   During backprop, the `+` sign acts as a distributor. It sends the gradient through $F(x)$ (which might die) AND through the shortcut path (which carries the signal perfectly with a strength of 1).
     *   This allows training networks with hundreds of layers (ResNet, Transformers).
 
----\n
+---
 ## 4.8 Attention Layers (The "Teleporter")
 
 ### The Concept
@@ -173,7 +173,25 @@ $$ \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right
     *   Head 3 focuses on Relationships.
 *   **Analogy:** 12 experts analyzing the sentence simultaneously for different things.
 
----\n
+---
+## 4.10 Positional Encoding (The "Where am I?" Tag)
+
+### The Conflict
+*   **Strength:** Layers like Multi-Head Attention are **Position-Agnostic** (Invariant). They treat the input like a "bag of words"—they don't inherently know that "Dog bites Man" is different from "Man bites Dog."
+*   **Weakness:** In Language (and Image Synthesis), position/order defines meaning.
+
+### The Solution: Injecting Position
+*   **Mechanism:** We explicitly modify the input **Data** (Feature Representation) to carry its own location information. We do not change the layer's architecture.
+*   **Operations:**
+    *   **Add:** $Input = \text{Word\_Vector} + \text{Positional\_Vector}$.
+    *   **Concatenate:** $Input = [\text{Word\_Vector}, \text{Positional\_Vector}]$.
+
+### How to generate the Encodings?
+1.  **Learned:** The model learns the best "signature" for Position 1, Position 2, etc., during training.
+2.  **Analytical (The Transformer Way):** Uses fixed mathematical waves (Sines and Cosines).
+    *   **Logic:** Uses different frequencies so every position has a unique combination of wave values (like a binary code, but continuous).
+
+---
 ## Q&A: Conceptualizing "Training" & "Parameters"
 
 ### Where do the numbers come from?
