@@ -69,3 +69,116 @@
     *   **Global Average Pooling:** Smashes the $7 \times 7$ spatial area into a single vector ($2048$).
     *   **FC Layer:** Maps 2048 $\to$ 1000 Classes (Logits).
 *   **Use Case:** Best for processing signals where the dimension is **not too large**. (Inefficient for high-dimensional data like images, as per Chapter 4).
+
+---
+## 5.3 Attention Models
+*   **Context:** The dominant architecture for Natural Language Processing (NLP) and increasingly for Vision.
+*   **Key Innovation:** Allows the model to focus on (attend to) different parts of the input sequence dynamically, rather than processing fixed local windows (like CNNs) or fixed sequential steps (like RNNs).
+
+### The Transformer [Vaswani et al., 2017]
+*   **Origin:** Designed for Sequence-to-Sequence translation (e.g., English to French).
+*   **Architecture Parts:**
+    1.  **Encoder:** reads the input.
+        *   Uses **Self-Attention** to relate every word to every other word (understanding context).
+    2.  **Decoder:** generates the output.
+        *   Uses **Causal Self-Attention** (looks at what it has written so far).
+        *   Uses **Cross-Attention** (looks back at the Encoder's understanding of the input).
+*   **Building Blocks:**
+    *   **Feed-Forward Block:** A standard MLP (processed per-position).
+    *   **Attention Block:** Recombines information globally.
+
+### GPT (Generative Pre-trained Transformer)
+*   **Structure:** Basically just the **Decoder** part of the Transformer.
+*   **Mechanism:** "Autoregressive" — it simply predicts the next word in the sequence based on all previous words.
+*   **Scaling:** This architecture proved to scale incredibly well (GPT-3, GPT-4), learning complex reasoning just by learning to predict the next token.
+
+### Vision Transformer (ViT) [Dosovitskiy et al., 2020]
+*   **Concept:** Treating images like text.
+*   **Process:**
+    1.  **Cut:** Slice the image into small square patches (e.g., $16 \times 16$ pixels).
+    2.  **Flatten:** Turn each patch into a flat vector (like a "word" embedding).
+    3.  **Add CLS:** Add a special "Class Token" ($E_0$) to the start of the sequence.
+    4.  **Process:** Run the sequence of patches through a standard Transformer Encoder.
+    5.  **Predict:** Use the final state of the **CLS Token** to classify the image.
+*   **Significance:** Proved that Convolutions (CNNs) aren't strictly necessary for Computer Vision if you have enough data and compute; Attention can learn to see.
+
+### Understanding Transformer Components: "Buildings vs. Furniture"
+*   **The Furniture (The Blocks):**
+    *   **Feed-Forward Block (The Desk):** Where the processing happens (reasoning/computation).
+    *   **Self-Attention Block (The Intercom):** Communication *within* the same sequence (building).
+    *   **Cross-Attention Block (The Telephone):** Communication *between* two sequences (Encoder $\leftrightarrow$ Decoder).
+*   **The Buildings (The Architectures):**
+    *   **Encoder (The Reader):** Uses Self-Attention + Feed-Forward. No Cross-Attention. (e.g., BERT).
+    *   **Decoder (The Writer):** Uses Self-Attention + Cross-Attention + Feed-Forward. (e.g., GPT uses a modified Decoder without Cross-Attention).
+
+### Example Flow: Translating "The cat" (Encoder-Decoder)
+1.  **Input:** "The cat" enters the **Encoder**.
+2.  **Encoder Action:**
+    *   **Self-Attention:** Connects "The" to "cat".
+    *   **Feed-Forward:** Processes the meaning.
+    *   **Output:** Creates a "Memory Bank" (Keys/Values) representing the concept of a specific cat.
+3.  **Decoder Action:**
+    *   **Start:** Tries to generate the first word.
+    *   **Cross-Attention:** Asks the Encoder's Memory Bank: "What is the subject?"
+    *   **Result:** Retrieves "Cat" concept.
+    *   **Feed-Forward:** Decides the French word is "Le".
+    *   **Next Step:** Uses **Self-Attention** to remember it just said "Le", then asks Encoder for the noun, generates "chat".
+
+### The "Soft Hashmap" Analogy
+*   **Data Structure:** Attention is closer to a **Hash Map** or **Database Query** than a List or Tree.
+*   **Components:**
+    *   **Query ($Q$):** "What am I looking for?"
+    *   **Key ($K$):** "What defines this piece of data?"
+    *   **Value ($V$):** "What is the actual content?"
+*   **The Difference (Soft Match):**
+    *   **Standard Hash Map:** Uses Exact Match ($Q == K$). Returns one value or nothing.
+    *   **Attention:** Uses **Dot Product Similarity** (Soft Match). Returns a weighted blend of values based on how well $Q$ matches $K$ (e.g., "50% Apple, 50% Pear").
+
+### Model Weights & Parameter Count (Napkin Math)
+*   **Concept:** "1 Trillion Parameters" is the sum of all entries in the weight matrices ($W_Q, W_K, W_V, W_{FF}$) across all layers.
+*   **Example: "GPT-Model-X" (6B Params)**
+    *   **Specs:** Embedding Dim ($D$) = 4,096, Layers ($L$) = 32.
+    *   **Attention Block (1/3 of params):**
+        *   4 Matrices ($Q, K, V, Out$). Each is $D \times D$.
+        *   $4096 \times 4096 \approx 16\text{M}$. Total $16\text{M} \times 4 = 64\text{M}$.
+    *   **Feed-Forward Block (2/3 of params):**
+        *   Expands dimension by $4\times$ (to 16,384) to "think", then shrinks back.
+        *   Up-Projection: $4096 \times 16384 \approx 67\text{M}$.
+        *   Down-Projection: $16384 \times 4096 \approx 67\text{M}$.
+        *   Total $\approx 134\text{M}$.
+    *   **Per Layer Total:** $64\text{M} + 134\text{M} \approx 200\text{M}$.
+    *   **Total Model:** $200\text{M} \times 32 \text{ Layers} \approx 6.4 \text{ Billion Parameters}$.
+
+### Why GPT Scales (The "Bittersweet Lesson" & Parallelism)
+*   **Causal Self-Attention:**
+    *   **Definition:** "Attention that is blind to the future."
+    *   **Implementation:** A mask ($-\infty$) in the attention matrix prevents Position $T$ from looking at Position $T+1$.
+    *   **Why?** Ensures the model learns to *predict* based on history, not *copy* the answer from the future.
+*   **The "Bittersweet Lesson" (Rich Sutton):**
+    *   Human-designed rules (grammar, logic) always lose to **Generic Methods + Massive Compute**.
+    *   GPT uses a "dumb" objective (Next Token Prediction) on "dumb" data (The Internet), but because it can scale, it learns better representations than any linguistic theory ever produced.
+    *   **Scaling: RNNs vs. Transformers:**
+    *   **RNNs (Sequential):** Must process Word 1 $\to$ Word 2 $\to$ Word 3. Cannot parallelize. GPUs sit idle.
+    *   **Transformers (Parallel Training):**
+        *   Uses **Teacher Forcing**. We know the ground truth ("The cat sat").
+        *   We can calculate the error for "The $\to$ cat", "cat $\to$ sat", and "sat $\to$ on" **simultaneously** in one massive matrix operation.
+        *   The mask ensures causality, but the *calculation* happens in parallel. This allows training on massive datasets efficiently.
+
+### Emerging Architectures: Mamba & Simba
+*   **The Problem:** Transformers are **$O(N^2)$**.
+    *   Attention requires every token to look at every other token.
+    *   10x sequence length = 100x compute cost. Limits context window (e.g., processing whole books or DNA).
+*   **Mamba (State Space Models - SSMs):**
+    *   **Concept:** Performance of a Transformer, Efficiency of an RNN.
+    *   **Complexity:** **$O(N)$ (Linear)**.
+        *   Processes sequence step-by-step, compressing history into a "State".
+        *   10x sequence length = 10x cost. Allows for massive context.
+    *   **Key Innovations:**
+        1.  **Selection Mechanism:** A "Valve" that dynamically decides what to remember/forget based on the input (fixing the weakness of old RNNs).
+        2.  **Parallel Scan (The Math Trick):** Uses the property of **Associativity** (like $(a+b)+c = a+(b+c)$) to calculate sequential updates in parallel (Tree structure) rather than waiting for the previous step.
+            *   *Result:* Trains as fast as a Transformer on GPUs.
+*   **Simba (Mamba for Vision):**
+    *   Applies Mamba to image patches.
+    *   Allows processing high-resolution images/video efficiently, avoiding the quadratic cost of Vision Transformers (ViT).
+
+
